@@ -6,9 +6,6 @@ import org.gradle.api.provider.Property
 import javax.inject.Inject
 
 abstract class CloudstreamExtension @Inject constructor(project: Project) {
-    val projectType: Property<ProjectType> =
-        project.objects.property(ProjectType::class.java).convention(ProjectType.PLUGIN)
-
     val userCache = project.gradle.gradleUserHomeDir.resolve("caches").resolve("cloudstream")
 
     var discord: ApkInfo? = null

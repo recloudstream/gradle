@@ -1,7 +1,5 @@
 package com.lagradost.gradle
 
-import com.aliucord.gradle.configuration.registerConfigurations
-import com.aliucord.gradle.task.registerTasks
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
