@@ -16,7 +16,7 @@ abstract class GenSourcesTask : DefaultTask() {
         val extension = project.extensions.getCloudstream()
         val apkinfo = extension.apkinfo!!
 
-        val sourcesJarFile = apkinfo.cache.resolve("cloudstream-${apkinfo.version}-sources.jar")
+        val sourcesJarFile = apkinfo.cache.resolve("cloudstream-sources.jar")
 
         val args = JadxArgs()
         args.setInputFile(apkinfo.apkFile)
