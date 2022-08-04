@@ -1,6 +1,6 @@
 package com.lagradost.gradle.tasks
 
-import com.cloudstream.gradle.getCloudstream
+import com.lagradost.gradle.getCloudstream
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
 import com.android.build.gradle.options.SyncOptions.ErrorFormatMode
