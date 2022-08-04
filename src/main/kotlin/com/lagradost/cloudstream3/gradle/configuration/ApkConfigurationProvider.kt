@@ -21,7 +21,7 @@ class ApkConfigurationProvider : IConfigurationProvider {
 
     override fun provide(project: Project, dependency: Dependency) {
         val extension = project.extensions.getCloudstream()
-        val apkinfo = ApkInfo(extension, dependency.version ?: "prerelease")
+        val apkinfo = ApkInfo(extension, dependency.version ?: "pre-release")
         extension.apkinfo = apkinfo
 
         apkinfo.cache.mkdirs()

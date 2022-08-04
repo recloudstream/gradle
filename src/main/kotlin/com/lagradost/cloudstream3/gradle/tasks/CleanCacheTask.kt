@@ -6,7 +6,6 @@ import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
-import se.vidstige.jadb.*
 import java.nio.charset.StandardCharsets
 
 abstract class CleanCacheTask : DefaultTask() {
