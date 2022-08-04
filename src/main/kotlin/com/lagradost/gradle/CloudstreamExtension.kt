@@ -8,18 +8,22 @@ import javax.inject.Inject
 abstract class CloudstreamExtension @Inject constructor(project: Project) {
     val userCache = project.gradle.gradleUserHomeDir.resolve("caches").resolve("cloudstream")
 
-
-    var apkinfo: ApkInfo? = null
+    var apkinfo: ApkInfo = ApkInfo(this)
         internal set
+
+    fun overrideUrl(url: String) {
+        apkinfo.url = url
+    }
 
     internal var pluginClassName: String? = null
 }
 
-class ApkInfo(extension: CloudstreamExtension, val version: Int) {
+class ApkInfo(extension: CloudstreamExtension) {
     val cache = extension.userCache.resolve("cloudstream")
 
-    val apkFile = cache.resolve("cloudstream-$version.apk")
-    val jarFile = cache.resolve("cloudstream-$version.jar")
+    var url = "https://github.com/recloudstream/cloudstream/releases/download/pre-release/app-debug.apk"
+    val apkFile = cache.resolve("cloudstream.apk")
+    val jarFile = cache.resolve("cloudstream.jar")
 }
 
 fun ExtensionContainer.getCloudstream(): CloudstreamExtension {
