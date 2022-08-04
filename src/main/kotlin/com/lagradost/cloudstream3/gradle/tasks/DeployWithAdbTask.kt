@@ -40,25 +40,22 @@ abstract class DeployWithAdbTask : DefaultTask() {
 
         var file = make.outputs.files.singleFile
 
-
         var path = "/storage/emulated/0/Cloudstream3/plugins/"
         
         device.push(file, RemoteFile(path + file.name))
 
-        if (extension.projectType.get() != ProjectType.INJECTOR) {
-            val args = arrayListOf("start", "-S", "-n", "com.lagradost.cloudstream3.debug/com.lagradost.cloudstream3.MainActivity")
+        val args = arrayListOf("start", "-S", "-n", "com.lagradost.cloudstream3.debug/com.lagradost.cloudstream3.MainActivity")
 
-            if (waitForDebugger) {
-                args.add("-D")
-            }
+        if (waitForDebugger) {
+            args.add("-D")
+        }
 
-            val response = String(
-                device.executeShell("am", *args.toTypedArray()).readAllBytes(), StandardCharsets.UTF_8
-            )
+        val response = String(
+            device.executeShell("am", *args.toTypedArray()).readAllBytes(), StandardCharsets.UTF_8
+        )
 
-            if (response.contains("Error")) {
-                logger.error(response)
-            }
+        if (response.contains("Error")) {
+            logger.error(response)
         }
 
         logger.lifecycle("Deployed $file to ${device.serial}")
