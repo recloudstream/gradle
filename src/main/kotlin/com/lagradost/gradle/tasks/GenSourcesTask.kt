@@ -1,6 +1,6 @@
 package com.lagradost.gradle.tasks
 
-import com.cloudstream.gradle.getCloudstream
+import com.lagradost.gradle.getCloudstream
 import jadx.api.JadxArgs
 import jadx.api.JadxDecompiler
 import jadx.api.impl.NoOpCodeCache
@@ -13,7 +13,7 @@ import java.util.function.Function
 abstract class GenSourcesTask : DefaultTask() {
     @TaskAction
     fun genSources() {
-        val extension = project.extensions.getAliucord()
+        val extension = project.extensions.getCloudstream()
         val apkinfo = extension.apkinfo!!
 
         val sourcesJarFile = apkinfo.cache.resolve("cloudstream-${apkinfo.version}-sources.jar")

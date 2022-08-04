@@ -1,6 +1,6 @@
 package com.lagradost.gradle.tasks
 
-import com.cloudstream.gradle.getCloudstream
+import com.lagradost.gradle.getCloudstream
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.tasks.ProcessLibraryManifest
 import groovy.json.JsonBuilder
@@ -43,21 +43,21 @@ fun registerTasks(project: Project) {
             val compileDexTask = compileDex.get()
             it.dependsOn(compileDexTask)
 
-            it.doFirst {
-                require(project.version != "unspecified") {
-                    "No version is set"
-                }
+            // it.doFirst {
+            //     require(project.version != "unspecified") {
+            //         "No version is set"
+            //     }
 
-                if (extension.pluginClassName == null) {
-                    if (pluginClassFile.exists()) {
-                        extension.pluginClassName = pluginClassFile.readText()
-                    }
-                }
+            //     if (extension.pluginClassName == null) {
+            //         if (pluginClassFile.exists()) {
+            //             extension.pluginClassName = pluginClassFile.readText()
+            //         }
+            //     }
 
-                require(extension.pluginClassName != null) {
-                    "No plugin class found, make sure your plugin class is annotated with @CloudstreamPlugin"
-                }
-            }
+            //     require(extension.pluginClassName != null) {
+            //         "No plugin class found, make sure your plugin class is annotated with @CloudstreamPlugin"
+            //     }
+            // }
 
             it.from(compileDexTask.outputFile)
             it.into(project.buildDir)
