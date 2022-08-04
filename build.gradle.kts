@@ -42,10 +42,14 @@ gradlePlugin {
 
 publishing {
     repositories {
-        val token = System.getenv("GITHUB_TOKEN")
+        val token = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
 
         if (token != null) {
             maven {
+                credentials {
+                    username = "recloudstream"
+                    password = token
+                }
                 setUrl("https://maven.pkg.github.com/recloudstream/gradle")
             }
         } else {
