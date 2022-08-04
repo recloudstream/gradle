@@ -12,8 +12,12 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import java.lang.Integer.parseInt
 import java.net.URL
+import java.nio.file.Files
 
 class ApkConfigurationProvider : IConfigurationProvider {
+
+    override val name: String
+        get() = "apk"
 
     override fun provide(project: Project, dependency: Dependency) {
         val extension = project.extensions.getCloudstream()
