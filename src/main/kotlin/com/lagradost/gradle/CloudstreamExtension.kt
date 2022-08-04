@@ -8,7 +8,11 @@ import javax.inject.Inject
 abstract class CloudstreamExtension @Inject constructor(project: Project) {
     val userCache = project.gradle.gradleUserHomeDir.resolve("caches").resolve("cloudstream")
 
-    var discord: ApkInfo? = null
+
+    var apkinfo: ApkInfo? = null
+        internal set
+
+    internal var pluginClassName: String? = null
 }
 
 class ApkInfo(extension: CloudstreamExtension, val version: Int) {
@@ -20,4 +24,8 @@ class ApkInfo(extension: CloudstreamExtension, val version: Int) {
 
 fun ExtensionContainer.getCloudstream(): CloudstreamExtension {
     return getByName("cloudstream") as CloudstreamExtension
+}
+
+fun ExtensionContainer.findCloudstream(): CloudstreamExtension? {
+    return findByName("cloudstream") as CloudstreamExtension?
 }
