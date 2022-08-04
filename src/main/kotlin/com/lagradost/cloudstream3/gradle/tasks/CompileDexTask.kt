@@ -1,6 +1,6 @@
-package com.lagradost.gradle.tasks
+package com.lagradost.cloudstream3.gradle.tasks
 
-import com.lagradost.gradle.getCloudstream
+import com.lagradost.cloudstream3.gradle.getCloudstream
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
 import com.android.build.gradle.options.SyncOptions.ErrorFormatMode
@@ -79,7 +79,7 @@ abstract class CompileDexTask : DefaultTask() {
                         reader.accept(classNode, 0)
 
                         for (annotation in classNode.visibleAnnotations.orEmpty() + classNode.invisibleAnnotations.orEmpty()) {
-                            if (annotation.desc == "Lcom/lagradost/annotations/CloudstreamPlugin;") {
+                            if (annotation.desc == "Lcom/lagradost/cloudstream3/plugins/CloudstreamPlugin;") {
                                 val cloudstream = project.extensions.getCloudstream()
 
                                 require(cloudstream.pluginClassName == null) {

@@ -1,9 +1,9 @@
-package com.lagradost.gradle.configuration
+package com.lagradost.cloudstream3.gradle.configuration
 
-import com.lagradost.gradle.ApkInfo
-import com.lagradost.gradle.createProgressLogger
-import com.lagradost.gradle.download
-import com.lagradost.gradle.getCloudstream
+import com.lagradost.cloudstream3.gradle.ApkInfo
+import com.lagradost.cloudstream3.gradle.createProgressLogger
+import com.lagradost.cloudstream3.gradle.download
+import com.lagradost.cloudstream3.gradle.getCloudstream
 import com.googlecode.d2j.dex.Dex2jar
 import com.googlecode.d2j.reader.BaseDexFileReader
 import com.googlecode.d2j.reader.MultiDexFileReader
@@ -21,7 +21,8 @@ class ApkConfigurationProvider : IConfigurationProvider {
 
     override fun provide(project: Project, dependency: Dependency) {
         val extension = project.extensions.getCloudstream()
-        val apkinfo = extension.apkinfo
+        val apkinfo = ApkInfo(extension, dependency.version ?: "prerelease")
+        extension.apkinfo = apkinfo
 
         apkinfo.cache.mkdirs()
 

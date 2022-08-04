@@ -14,10 +14,10 @@ jobs:
         with:
           java-version: 11
 
-      - name: Build and publish
-        run: |
-          chmod +x gradlew
-          ./gradlew :publish -Pversion=${GITHUB_REF##*/}-SNAPSHOT
-          ./gradlew :publish -Pversion=$(git rev-parse --short "$GITHUB_SHA")
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      # - name: Build and publish
+      #   run: |
+      #     chmod +x gradlew
+      #     ./gradlew :publish -Pversion=${GITHUB_REF##*/}-SNAPSHOT
+      #     ./gradlew :publish -Pversion=$(git rev-parse --short "$GITHUB_SHA")
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}

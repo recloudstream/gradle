@@ -1,4 +1,4 @@
-package com.lagradost.gradle
+package com.lagradost.cloudstream3.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
@@ -8,20 +8,20 @@ import javax.inject.Inject
 abstract class CloudstreamExtension @Inject constructor(project: Project) {
     val userCache = project.gradle.gradleUserHomeDir.resolve("caches").resolve("cloudstream")
 
-    var apkinfo: ApkInfo = ApkInfo(this)
+    var apkinfo: ApkInfo? = null
         internal set
 
     fun overrideUrl(url: String) {
-        apkinfo.url = url
+        apkinfo!!.url = url
     }
 
     internal var pluginClassName: String? = null
 }
 
-class ApkInfo(extension: CloudstreamExtension) {
+class ApkInfo(extension: CloudstreamExtension, release: String) {
     val cache = extension.userCache.resolve("cloudstream")
 
-    var url = "https://github.com/recloudstream/cloudstream/releases/download/pre-release/app-debug.apk"
+    var url = "https://github.com/recloudstream/cloudstream/releases/download/${release}/app-debug.apk"
     val apkFile = cache.resolve("cloudstream.apk")
     val jarFile = cache.resolve("cloudstream.jar")
 }

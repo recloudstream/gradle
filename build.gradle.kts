@@ -4,7 +4,7 @@ plugins {
     id("maven-publish")
 }
 
-group = "com.lagradost"
+group = "com.lagradost.cloudstream3"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -33,9 +33,9 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        create("com.lagradost.gradle") {
-            id = "com.lagradost.gradle"
-            implementationClass = "com.lagradost.gradle.CloudstreamPlugin"
+        create("com.lagradost.cloudstream3.gradle") {
+            id = "com.lagradost.cloudstream3.gradle"
+            implementationClass = "com.lagradost.cloudstream3.gradle.CloudstreamPlugin"
         }
     }
 }

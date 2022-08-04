@@ -1,6 +1,6 @@
-package com.lagradost.gradle.tasks
+package com.lagradost.cloudstream3.gradle.tasks
 
-import com.lagradost.gradle.getCloudstream
+import com.lagradost.cloudstream3.gradle.getCloudstream
 import jadx.api.JadxArgs
 import jadx.api.JadxDecompiler
 import jadx.api.impl.NoOpCodeCache
