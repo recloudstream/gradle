@@ -69,7 +69,11 @@ fun registerTasks(project: Project) {
                     JsonBuilder(
                         PluginManifest(
                             pluginClassName = extension.pluginClassName!!,
-                            name = project.name
+                            name = project.name,
+                            version = project.version.toString(),
+                            authors = extension.authors.get(),
+                            sourceUrl = extension.sourceUrl.get(),
+                            updateUrl = extension.updateUrl.get()
                         )
                     ).toPrettyString()
                 )
