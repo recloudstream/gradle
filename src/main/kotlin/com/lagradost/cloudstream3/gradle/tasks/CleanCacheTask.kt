@@ -14,9 +14,6 @@ abstract class CleanCacheTask : DefaultTask() {
         val extension = project.extensions.getCloudstream()
         val apkinfo = extension.apkinfo
         if (apkinfo == null) return;
-        if (apkinfo.apkFile.exists()) {
-            apkinfo.apkFile.delete()
-        }
 
         if (apkinfo.jarFile.exists()) {
             apkinfo.jarFile.delete()

@@ -39,7 +39,7 @@ fun URL.download(file: File, progressLogger: ProgressLogger) {
                     while (inputStream.read(buf).also { read = it } >= 0) {
                         os.write(buf, 0, read)
                         processedBytes += read
-                        progressLogger.progress("Downloading apk ${toLengthText(processedBytes)}/$sizeText")
+                        progressLogger.progress("Downloading ${toLengthText(processedBytes)}/$sizeText")
                     }
                     os.flush()
                     finished = true

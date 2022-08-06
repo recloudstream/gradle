@@ -11,8 +11,8 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     var apkinfo: ApkInfo? = null
         internal set
 
-    fun overrideUrl(url: String) {
-        apkinfo!!.url = url
+    fun overrideUrlPrefix(url: String) {
+        apkinfo!!.urlPrefix = url
     }
 
     internal var pluginClassName: String? = null
@@ -21,8 +21,7 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 class ApkInfo(extension: CloudstreamExtension, release: String) {
     val cache = extension.userCache.resolve("cloudstream")
 
-    var url = "https://github.com/recloudstream/cloudstream/releases/download/${release}/app-debug.apk"
-    val apkFile = cache.resolve("cloudstream.apk")
+    var urlPrefix = "https://github.com/recloudstream/cloudstream/releases/download/${release}"
     val jarFile = cache.resolve("cloudstream.jar")
 }
 

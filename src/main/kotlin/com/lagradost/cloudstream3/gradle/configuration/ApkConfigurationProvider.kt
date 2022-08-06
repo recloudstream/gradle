@@ -26,19 +26,11 @@ class ApkConfigurationProvider : IConfigurationProvider {
 
         apkinfo.cache.mkdirs()
 
-        if (!apkinfo.apkFile.exists()) {
-            project.logger.lifecycle("Downloading apk")
-
-            val url = URL(apkinfo.url)
-
-            url.download(apkinfo.apkFile, createProgressLogger(project, "Download apk"))
-        }
-
         if (!apkinfo.jarFile.exists()) {
-            project.logger.lifecycle("Converting apk to jar")
+            project.logger.lifecycle("Fetching JAR")
 
-            val reader: BaseDexFileReader = MultiDexFileReader.open(Files.readAllBytes(apkinfo.apkFile.toPath()))
-            Dex2jar.from(reader).topoLogicalSort().skipDebug(false).noCode(true).to(apkinfo.jarFile.toPath())
+            val url = URL("${apkinfo.urlPrefix}/classes.jar")
+            url.download(apkinfo.jarFile, createProgressLogger(project, "Download JAR"))
         }
 
         project.dependencies.add("compileOnly", project.files(apkinfo.jarFile))
