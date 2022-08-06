@@ -1,0 +1,14 @@
+name: Start Jitpack
+
+# Controls when the workflow will run
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch build.log
+        run: |
+          wget "https://jitpack.io/com/github/recloudstream/gradle/${GITHUB_REF##*/}-SNAPSHOT/build.log" -T 300
+          cat build.log
