@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.AbstractCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile 
 
 const val TASK_GROUP = "cloudstream"
 
@@ -27,12 +28,16 @@ fun registerTasks(project: Project) {
 
         it.pluginClassFile.set(pluginClassFile)
 
-        for (name in arrayOf("compileDebugJavaWithJavac", "compileDebugKotlin")) {
-            val task = project.tasks.findByName(name) as AbstractCompile?
-            if (task != null) {
-                it.dependsOn(task)
-                it.input.from(task.destinationDirectory)
-            }
+        val kotlinTask = project.tasks.findByName("compileDebugKotlin") as KotlinCompile?
+        if (kotlinTask != null) {
+            it.dependsOn(kotlinTask)
+            it.input.from(kotlinTask.destinationDirectory)
+        }
+
+        val javacTask = project.tasks.findByName("compileDebugJavaWithJavac") as AbstractCompile?
+        if (javacTask != null) {
+            it.dependsOn(javacTask)
+            it.input.from(javacTask.destinationDirectory)
         }
 
         it.outputFile.set(intermediates.resolve("classes.dex"))
