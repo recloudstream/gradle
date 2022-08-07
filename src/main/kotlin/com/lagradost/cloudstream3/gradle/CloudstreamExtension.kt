@@ -21,9 +21,11 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     internal var pluginClassName: String? = null
 
-    val updateUrl: Property<String> = project.objects.property(String::class.java)
-    val sourceUrl: Property<String> = project.objects.property(String::class.java)
+    val repositoryUrl: Property<String> = project.objects.property(String::class.java)
+    val description: Property<String> = project.objects.property(String::class.java)
     val authors: ListProperty<String> = project.objects.listProperty(String::class.java)
+    val isAdult: Property<Boolean> = project.objects.property(Boolean::class.java)
+    val status: Property<Int> = project.objects.property(Int::class.java)
 }
 
 class ApkInfo(extension: CloudstreamExtension, release: String) {

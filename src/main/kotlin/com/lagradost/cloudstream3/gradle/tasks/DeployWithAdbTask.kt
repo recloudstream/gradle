@@ -17,7 +17,6 @@ abstract class DeployWithAdbTask : DefaultTask() {
 
     @TaskAction
     fun deployWithAdb() {
-        val extension = project.extensions.getCloudstream()
         val android = project.extensions.getByName("android") as BaseExtension
 
         AdbServerLauncher(Subprocess(), android.adbExecutable.absolutePath).launch()

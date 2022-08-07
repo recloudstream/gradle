@@ -5,6 +5,8 @@ data class PluginManifest(
     val name: String,
     val version: String,
     val authors: List<String>,
-    val sourceUrl: String?,
-    val updateUrl: String?,
+    val repositoryUrl: String?,
+    val description: String?,
+    val isAdult: Boolean?,
+    val status: Int
 )

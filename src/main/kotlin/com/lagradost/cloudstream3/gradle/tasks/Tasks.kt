@@ -2,6 +2,7 @@ package com.lagradost.cloudstream3.gradle.tasks
 
 import com.lagradost.cloudstream3.gradle.getCloudstream
 import com.lagradost.cloudstream3.gradle.entities.PluginManifest
+import com.lagradost.cloudstream3.gradle.makeManifest
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.tasks.ProcessLibraryManifest
 import groovy.json.JsonBuilder
@@ -66,16 +67,7 @@ fun registerTasks(project: Project) {
                 }
 
                 manifestFile.writeText(
-                    JsonBuilder(
-                        PluginManifest(
-                            pluginClassName = extension.pluginClassName!!,
-                            name = project.name,
-                            version = project.version.toString(),
-                            authors = extension.authors.get(),
-                            sourceUrl = extension.sourceUrl.get(),
-                            updateUrl = extension.updateUrl.get()
-                        )
-                    ).toPrettyString()
+                    JsonBuilder(project.makeManifest()).toPrettyString()
                 )
             }
 
