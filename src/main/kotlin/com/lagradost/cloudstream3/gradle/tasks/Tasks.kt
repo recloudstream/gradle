@@ -18,6 +18,16 @@ fun registerTasks(project: Project) {
     val extension = project.extensions.getCloudstream()
     val intermediates = project.buildDir.resolve("intermediates")
 
+    if (project.rootProject.tasks.findByName("makePluginsJson") == null) {
+        project.rootProject.tasks.register("makePluginsJson", MakePluginsJsonTask::class.java) {
+            it.group = TASK_GROUP
+
+            it.outputs.upToDateWhen { false }
+
+            it.outputFile.set(it.project.buildDir.resolve("plugins.json"))
+        }
+    }
+
     project.tasks.register("genSources", GenSourcesTask::class.java) {
         it.group = TASK_GROUP
     }
@@ -69,6 +79,7 @@ fun registerTasks(project: Project) {
             //zip.dependsOn(compileResources.get())
             zip.isPreserveFileTimestamps = false
             zip.archiveBaseName.set(project.name)
+            zip.archiveExtension.set("cs3")
             zip.archiveVersion.set("")
             zip.destinationDirectory.set(project.buildDir)
 
@@ -80,11 +91,6 @@ fun registerTasks(project: Project) {
 
     project.tasks.register("cleanCache", CleanCacheTask::class.java) {
         it.group = TASK_GROUP
-    }
-
-    project.tasks.register("dumpManifest", DumpManifestTask::class.java) {
-        it.group = TASK_GROUP
-        it.dependsOn("make")
     }
 
     project.tasks.register("deployWithAdb", DeployWithAdbTask::class.java) {
