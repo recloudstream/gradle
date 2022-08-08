@@ -19,7 +19,8 @@ fun Project.makeManifest(): PluginManifest {
     return PluginManifest(
         pluginClassName = extension.pluginClassName,
         name = this.name,
-        pluginVersion = this.version.toString()
+        pluginVersion = this.version.toString(),
+        apiVersion = extension.apiVersion
     )
 }
 
@@ -41,6 +42,7 @@ fun Project.makePluginEntry(): PluginEntry {
         authors = extension.authors.getOrElse(listOf()),
         description = extension.description.orNull,
         repositoryUrl = (if (repo == null) null else repo.url),
-        isAdult = extension.adult.getOrElse(false)
+        isAdult = extension.adult.getOrElse(false),
+        apiVersion = extension.apiVersion
     )
 }

@@ -9,6 +9,8 @@ import javax.inject.Inject
 abstract class CloudstreamExtension @Inject constructor(project: Project) {
     val userCache = project.gradle.gradleUserHomeDir.resolve("caches").resolve("cloudstream")
 
+    val apiVersion = 1
+
     var apkinfo: ApkInfo? = null
         internal set
 
