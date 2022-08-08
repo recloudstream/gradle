@@ -5,17 +5,16 @@ import com.lagradost.cloudstream3.gradle.getCloudstream
 import com.lagradost.cloudstream3.gradle.entities.PluginManifest
 import groovy.json.JsonBuilder
 
-fun Project.makeManifest(skipClass: Boolean?): PluginManifest {
+fun Project.makeManifest(skipClass: Boolean): PluginManifest {
     val extension = this.extensions.getCloudstream()
 
     require(this.version != "unspecified") {
         "No version is set"
     }
 
-    require((skipClass == null || !skipClass) && extension.pluginClassName != null) {
+    require(!skipClass && extension.pluginClassName != null) {
         "No plugin class found, make sure your plugin class is annotated with @CloudstreamPlugin"
     }
-
 
     return PluginManifest(
         pluginClassName = extension.pluginClassName,
