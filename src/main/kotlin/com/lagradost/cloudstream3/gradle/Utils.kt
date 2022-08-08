@@ -8,18 +8,19 @@ import groovy.json.JsonBuilder
 fun Project.makeManifest(): PluginManifest {
     val extension = this.extensions.getCloudstream()
 
-    require(this.version != "unspecified") {
-        "No version is set"
-    }
-
     require(extension.pluginClassName != null) {
         "No plugin class found, make sure your plugin class is annotated with @CloudstreamPlugin"
     }
     
+    val version = this.version.toString().toIntOrNull(10)
+    if (version == null) {
+        logger.warn("'${project.version}' is not a valid version. Use an integer.")
+    }
+
     return PluginManifest(
         pluginClassName = extension.pluginClassName,
         name = this.name,
-        pluginVersion = this.version.toString(),
+        pluginVersion = version ?: -1,
         apiVersion = extension.apiVersion
     )
 }
@@ -27,22 +28,23 @@ fun Project.makeManifest(): PluginManifest {
 fun Project.makePluginEntry(): PluginEntry {
     val extension = this.extensions.getCloudstream()
 
-    require(this.version != "unspecified") {
-        "No version is set"
+    val version = this.version.toString().toIntOrNull(10)
+    if (version == null) {
+        logger.warn("'${project.version}' is not a valid version. Use an integer.")
     }
 
     val repo = extension.repository
 
     return PluginEntry(
         url = (if (repo == null) "" else repo.getRawLink("${this.name}.cs3", "builds")),
-        status = extension.status.getOrElse(3),
-        version = this.version.toString(),
+        status = extension.status,
+        version = version ?: -1,
         name = this.name,
         internalName = this.name,
-        authors = extension.authors.getOrElse(listOf()),
-        description = extension.description.orNull,
+        authors = extension.authors,
+        description = extension.description,
         repositoryUrl = (if (repo == null) null else repo.url),
-        isAdult = extension.adult.getOrElse(false),
+        isAdult = extension.isAdult,
         apiVersion = extension.apiVersion
     )
 }

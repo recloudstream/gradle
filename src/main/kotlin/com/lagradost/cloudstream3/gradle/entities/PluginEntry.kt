@@ -3,7 +3,7 @@ package com.lagradost.cloudstream3.gradle.entities
 data class PluginEntry(
     val url: String,
     val status: Int,
-    val version: String,
+    val version: Int,
     val name: String,
     val internalName: String,
     val authors: List<String>,
