@@ -25,6 +25,14 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     fun setRepo(user: String, repo: String) {
         repository = Repo(user, repo)
     }
+    fun setRepo(identifier: String) {
+        val split = identifier
+            .removePrefix("https://")
+            .removePrefix("github.com")
+            .removeSurrounding("/")
+            .split("/")
+        repository = Repo(split[0], split[1])
+    }
 
     internal var pluginClassName: String? = null
 
