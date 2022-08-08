@@ -52,18 +52,10 @@ fun registerTasks(project: Project) {
             val manifestFile = intermediates.resolve("manifest.json")
             it.from(manifestFile)
             it.doFirst {
-                require(project.version != "unspecified") {
-                    "No version is set"
-                }
-
                 if (extension.pluginClassName == null) {
                     if (pluginClassFile.exists()) {
                         extension.pluginClassName = pluginClassFile.readText()
                     }
-                }
-
-                require(extension.pluginClassName != null) {
-                    "No plugin class found, make sure your plugin class is annotated with @CloudstreamPlugin"
                 }
 
                 manifestFile.writeText(
@@ -88,6 +80,11 @@ fun registerTasks(project: Project) {
 
     project.tasks.register("cleanCache", CleanCacheTask::class.java) {
         it.group = TASK_GROUP
+    }
+
+    project.tasks.register("dumpManifest", DumpManifestTask::class.java) {
+        it.group = TASK_GROUP
+        it.dependsOn("make")
     }
 
     project.tasks.register("deployWithAdb", DeployWithAdbTask::class.java) {
