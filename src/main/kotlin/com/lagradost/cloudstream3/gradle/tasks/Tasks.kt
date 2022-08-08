@@ -6,6 +6,7 @@ import com.lagradost.cloudstream3.gradle.makeManifest
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.tasks.ProcessLibraryManifest
 import groovy.json.JsonBuilder
+import groovy.json.JsonGenerator
 import org.gradle.api.Project
 import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.bundling.Zip
@@ -69,7 +70,11 @@ fun registerTasks(project: Project) {
                 }
 
                 manifestFile.writeText(
-                    JsonBuilder(project.makeManifest()).toPrettyString()
+                    JsonBuilder(project.makeManifest(),
+                        JsonGenerator.Options()
+                        .excludeNulls()
+                        .build()
+                    ).toString()
                 )
             }
 

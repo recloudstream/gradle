@@ -22,7 +22,7 @@ abstract class MakePluginsJsonTask : DefaultTask() {
         for (subproject in project.allprojects) {
             val cloudstream = subproject.extensions.findCloudstream() ?: continue
 
-            lst.add(subproject.makeManifest())
+            lst.add(subproject.makeManifest(true))
         }
 
         outputFile.asFile.get().writeText(
@@ -31,7 +31,7 @@ abstract class MakePluginsJsonTask : DefaultTask() {
                 JsonGenerator.Options()
                     .excludeNulls()
                     .build()
-            ).toString()
+            ).toPrettyString()
         )
     }
 }
