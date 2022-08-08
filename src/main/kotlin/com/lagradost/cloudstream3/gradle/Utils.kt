@@ -20,7 +20,7 @@ fun Project.makeManifest(): PluginManifest {
     return PluginManifest(
         pluginClassName = extension.pluginClassName,
         name = this.name,
-        pluginVersion = version ?: -1,
+        version = version ?: -1,
         apiVersion = extension.apiVersion
     )
 }
