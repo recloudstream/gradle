@@ -12,6 +12,9 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     var apkinfo: ApkInfo? = null
         internal set
 
+    var repository: Repo? = null
+        internal set
+
     fun overrideUrlPrefix(url: String) {
         if (apkinfo == null) {
             apkinfo = ApkInfo(this, "pre-release")
@@ -19,12 +22,15 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
         apkinfo!!.urlPrefix = url
     }
 
+    fun setRepo(user: String, repo: String) {
+        repository = Repo(user, repo)
+    }
+
     internal var pluginClassName: String? = null
 
-    val repositoryUrl: Property<String> = project.objects.property(String::class.java)
     val description: Property<String> = project.objects.property(String::class.java)
     val authors: ListProperty<String> = project.objects.listProperty(String::class.java)
-    val isAdult: Property<Boolean> = project.objects.property(Boolean::class.java)
+    val adult: Property<Boolean> = project.objects.property(Boolean::class.java)
     val status: Property<Int> = project.objects.property(Int::class.java)
 }
 
@@ -33,6 +39,15 @@ class ApkInfo(extension: CloudstreamExtension, release: String) {
 
     var urlPrefix = "https://github.com/recloudstream/cloudstream/releases/download/${release}"
     val jarFile = cache.resolve("cloudstream.jar")
+}
+
+class Repo(val user: String, val repo: String) {
+    val url: String
+        get() = "https://github.com/${user}/${repo}"
+
+    fun getRawLink(filename: String, branch: String): String {
+        return "https://raw.githubusercontent.com/${user}/${repo}/${branch}/${filename}"
+    }
 }
 
 fun ExtensionContainer.getCloudstream(): CloudstreamExtension {

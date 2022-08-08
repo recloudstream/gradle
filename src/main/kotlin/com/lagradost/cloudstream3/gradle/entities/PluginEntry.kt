@@ -1,0 +1,13 @@
+package com.lagradost.cloudstream3.gradle.entities
+
+data class PluginEntry(
+    val url: String,
+    val status: Int,
+    val version: String,
+    val name: String,
+    val internalName: String,
+    val authors: List<String>,
+    val description: String?,
+    val repositoryUrl: String?,
+    val isAdult: Boolean,
+)

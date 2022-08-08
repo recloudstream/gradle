@@ -70,7 +70,7 @@ fun registerTasks(project: Project) {
                 }
 
                 manifestFile.writeText(
-                    JsonBuilder(project.makeManifest(false),
+                    JsonBuilder(project.makeManifest(),
                         JsonGenerator.Options()
                         .excludeNulls()
                         .build()
