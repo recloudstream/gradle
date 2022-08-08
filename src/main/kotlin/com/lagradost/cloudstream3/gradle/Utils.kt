@@ -12,10 +12,12 @@ fun Project.makeManifest(skipClass: Boolean): PluginManifest {
         "No version is set"
     }
 
-    require(!skipClass && extension.pluginClassName != null) {
-        "No plugin class found, make sure your plugin class is annotated with @CloudstreamPlugin"
+    if (!skipClass) {
+        require(extension.pluginClassName != null) {
+            "No plugin class found, make sure your plugin class is annotated with @CloudstreamPlugin"
+        }
     }
-
+    
     return PluginManifest(
         pluginClassName = extension.pluginClassName,
         name = this.name,
