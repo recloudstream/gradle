@@ -9,6 +9,6 @@ data class PluginEntry(
     val authors: List<String>,
     val description: String?,
     val repositoryUrl: String?,
-    val isAdult: Boolean,
+    val adult: Boolean,
     val apiVersion: Int
 )

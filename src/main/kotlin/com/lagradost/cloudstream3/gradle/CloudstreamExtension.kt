@@ -40,7 +40,7 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     var description: String? = null
     var authors = listOf<String>()
-    var isAdult = false
+    var adult = false
     var status = 3
 }
 
