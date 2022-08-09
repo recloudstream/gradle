@@ -55,6 +55,31 @@ fun registerTasks(project: Project) {
         it.outputFile.set(intermediates.resolve("classes.dex"))
     }
 
+    val compileResources = project.tasks.register("compileResources", CompileResourcesTask::class.java) {
+        it.group = TASK_GROUP
+
+        val processManifestTask = project.tasks.getByName("processDebugManifest") as ProcessLibraryManifest
+        it.dependsOn(processManifestTask)
+
+        val android = project.extensions.getByName("android") as BaseExtension
+        it.input.set(android.sourceSets.getByName("main").res.srcDirs.single())
+        it.manifestFile.set(processManifestTask.manifestOutputFile)
+
+        it.outputFile.set(intermediates.resolve("res.apk"))
+
+        it.doLast { _ ->
+            val resApkFile = it.outputFile.asFile.get()
+
+            if (resApkFile.exists()) {
+                project.tasks.named("make", AbstractCopyTask::class.java) {
+                    it.from(project.zipTree(resApkFile)) { copySpec ->
+                        copySpec.exclude("AndroidManifest.xml")
+                    }
+                }
+            }
+        }
+    }
+
     project.afterEvaluate {
         project.tasks.register("make", Zip::class.java) {
             val compileDexTask = compileDex.get()
@@ -81,7 +106,9 @@ fun registerTasks(project: Project) {
             it.from(compileDexTask.outputFile)
             
             val zip = it as Zip
-            //zip.dependsOn(compileResources.get())
+            if (extension.requiresResources) {
+                zip.dependsOn(compileResources.get())
+            }
             zip.isPreserveFileTimestamps = false
             zip.archiveBaseName.set(project.name)
             zip.archiveExtension.set("cs3")

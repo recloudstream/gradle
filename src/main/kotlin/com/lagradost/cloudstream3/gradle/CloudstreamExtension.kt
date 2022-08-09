@@ -38,6 +38,7 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     internal var pluginClassName: String? = null
 
+    var requiresResources = false
     var description: String? = null
     var authors = listOf<String>()
     var adult = false

@@ -21,6 +21,7 @@ fun Project.makeManifest(): PluginManifest {
         pluginClassName = extension.pluginClassName,
         name = this.name,
         version = version ?: -1,
+        requiresResources = extension.requiresResources
     )
 }
 
