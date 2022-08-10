@@ -37,15 +37,17 @@ abstract class CompileDexTask : DefaultTask() {
     fun compileDex() {
         val android = project.extensions.getByName("android") as BaseExtension
 
+        val minSdk = android.defaultConfig.minSdk ?: 21
+
         val dexOutputDir = outputFile.get().asFile.parentFile
 
         Closer.create().use { closer ->
             val dexBuilder = DexArchiveBuilder.createD8DexBuilder(
                 DexParameters(
-                    minSdkVersion = android.defaultConfig.maxSdkVersion ?: 24,
+                    minSdkVersion = minSdk,
                     debuggable = true,
                     dexPerClass = false,
-                    withDesugaring = true,
+                    withDesugaring = minSdk >= 24,
                     desugarBootclasspath = ClassFileProviderFactory(android.bootClasspath.map(File::toPath))
                         .also { closer.register(it) },
                     desugarClasspath = ClassFileProviderFactory(listOf<Path>()).also { closer.register(it) },
