@@ -45,6 +45,8 @@ fun Project.makePluginEntry(): PluginEntry {
         description = extension.description,
         repositoryUrl = (if (repo == null) null else repo.url),
         adult = extension.adult,
+        language = extension.language,
+        iconUrl = extension.iconUrl,
         apiVersion = extension.apiVersion
     )
 }

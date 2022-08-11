@@ -10,5 +10,7 @@ data class PluginEntry(
     val description: String?,
     val repositoryUrl: String?,
     val adult: Boolean,
+    val language: String?,
+    val iconUrl: String?,
     val apiVersion: Int
 )

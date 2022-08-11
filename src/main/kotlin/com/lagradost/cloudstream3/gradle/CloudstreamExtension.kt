@@ -43,6 +43,8 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     var authors = listOf<String>()
     var adult = false
     var status = 3
+    var language: String? = null
+    var iconUrl: String? = null
 }
 
 class ApkInfo(extension: CloudstreamExtension, release: String) {
