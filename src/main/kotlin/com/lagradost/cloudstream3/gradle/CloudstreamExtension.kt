@@ -44,6 +44,7 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     var adult = false
     var status = 3
     var language: String? = null
+    var tvTypes: List<String>? = null
     var iconUrl: String? = null
 }
 

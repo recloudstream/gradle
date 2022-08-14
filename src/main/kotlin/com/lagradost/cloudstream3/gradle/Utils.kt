@@ -47,6 +47,7 @@ fun Project.makePluginEntry(): PluginEntry {
         adult = extension.adult,
         language = extension.language,
         iconUrl = extension.iconUrl,
-        apiVersion = extension.apiVersion
+        apiVersion = extension.apiVersion,
+        tvTypes = extension.tvTypes
     )
 }
