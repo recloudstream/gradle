@@ -9,7 +9,6 @@ data class PluginEntry(
     val authors: List<String>,
     val description: String?,
     val repositoryUrl: String?,
-    val adult: Boolean,
     val language: String?,
     val tvTypes: List<String>?,
     val iconUrl: String?,

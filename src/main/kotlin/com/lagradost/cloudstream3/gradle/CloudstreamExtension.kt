@@ -41,7 +41,6 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     var requiresResources = false
     var description: String? = null
     var authors = listOf<String>()
-    var adult = false
     var status = 3
     var language: String? = null
     var tvTypes: List<String>? = null
