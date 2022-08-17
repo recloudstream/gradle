@@ -12,6 +12,5 @@ data class PluginEntry(
     val language: String?,
     val tvTypes: List<String>?,
     val iconUrl: String?,
-    val language: String?,
     val apiVersion: Int
 )

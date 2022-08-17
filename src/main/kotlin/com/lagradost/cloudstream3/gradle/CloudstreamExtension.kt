@@ -45,7 +45,6 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     var language: String? = null
     var tvTypes: List<String>? = null
     var iconUrl: String? = null
-    var language: String? = null
 }
 
 class ApkInfo(extension: CloudstreamExtension, release: String) {
