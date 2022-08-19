@@ -43,7 +43,7 @@ abstract class DeployWithAdbTask : DefaultTask() {
         
         device.push(file, RemoteFile(path + file.name))
 
-        val args = arrayListOf("start", "-S", "-n", "com.lagradost.cloudstream3.debug/com.lagradost.cloudstream3.MainActivity")
+        val args = arrayListOf("start", "-a", "android.intent.action.VIEW", "-d", "cloudstreamapp:")
 
         if (waitForDebugger) {
             args.add("-D")
