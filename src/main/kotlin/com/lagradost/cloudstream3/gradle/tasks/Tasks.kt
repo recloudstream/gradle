@@ -11,7 +11,8 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.AbstractCompile
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.lagradost.cloudstream3.gradle.findCloudstream
 
 const val TASK_GROUP = "cloudstream"
 
@@ -23,7 +24,15 @@ fun registerTasks(project: Project) {
         project.rootProject.tasks.register("makePluginsJson", MakePluginsJsonTask::class.java) {
             it.group = TASK_GROUP
 
-            it.mustRunAfter("make")
+            for (subproject in project.allprojects) {
+                subproject.extensions.findCloudstream() ?: continue
+    
+                val makeTask = subproject.tasks.findByName("make")
+                if (makeTask != null) {
+                    it.dependsOn(makeTask)
+                }
+                
+            }
             
             it.outputs.upToDateWhen { false }
 
