@@ -127,12 +127,7 @@ fun registerTasks(project: Project) {
             zip.destinationDirectory.set(project.buildDir)
 
             it.doLast { task ->
-                try {
-                    extension.fileSize = task.outputs.files.singleFile.length()
-                }
-                catch(e: Throwable) {
-                    extension.fileSize = -1L
-                }
+                extension.fileSize = task.outputs.files.singleFile.length()
                 task.logger.lifecycle("Made Cloudstream package at ${task.outputs.files.singleFile}")
             }
         }
