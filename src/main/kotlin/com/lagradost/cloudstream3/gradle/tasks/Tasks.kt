@@ -130,7 +130,7 @@ fun registerTasks(project: Project) {
                 try {
                     extension.fileSize = task.outputs.files.singleFile.length()
                 }
-                catch(Exception e) {
+                catch(e: Throwable) {
                     extension.fileSize = -1L
                 }
                 task.logger.lifecycle("Made Cloudstream package at ${task.outputs.files.singleFile}")
