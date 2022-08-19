@@ -130,6 +130,12 @@ fun registerTasks(project: Project) {
                 extension.fileSize = task.outputs.files.singleFile.length()
                 task.logger.lifecycle("Made Cloudstream package at ${task.outputs.files.singleFile}")
             }
+
+            it.finalizedBy {
+                if (extension.fileSize == null) {
+                    extension.fileSize = -1L
+                }
+            }
         }
     }
 

@@ -27,12 +27,8 @@ abstract class MakePluginsJsonTask : DefaultTask() {
                 bruh why does gradle ignore task order
                 forcing me to do jank like this
             */
-            var timeout = 10000 // 10 s timeout
             while (cloudstream.fileSize == null) {
                 Thread.sleep(100)
-                timeout -= 100
-                if (timeout <= 0)
-                    throw RuntimeException("Timeout while fetching fileSize for ${subproject.name}")
             }
 
             lst.add(subproject.makePluginEntry())
