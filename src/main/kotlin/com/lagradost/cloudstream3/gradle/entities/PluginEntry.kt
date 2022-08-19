@@ -8,6 +8,7 @@ data class PluginEntry(
     val internalName: String,
     val authors: List<String>,
     val description: String?,
+    val fileSize: Long?,
     val repositoryUrl: String?,
     val language: String?,
     val tvTypes: List<String>?,
