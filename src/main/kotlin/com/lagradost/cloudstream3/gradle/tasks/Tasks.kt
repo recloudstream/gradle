@@ -23,10 +23,7 @@ fun registerTasks(project: Project) {
         project.rootProject.tasks.register("makePluginsJson", MakePluginsJsonTask::class.java) {
             it.group = TASK_GROUP
 
-            val makeTask = project.tasks.findByName("make")
-            if (makeTask != null) {
-                it.dependsOn(makeTask)
-            }
+            it.mustRunAfter("make")
             
             it.outputs.upToDateWhen { false }
 
