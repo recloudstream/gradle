@@ -14,3 +14,8 @@ jobs:
         run: |
           wget "https://jitpack.io/com/github/recloudstream/gradle/${GITHUB_REF##*/}-${SHORT_SHA}-1/build.log" -T 300
           cat build.log
+      - name: Check status
+        run: |
+          if grep -q "FAILURE: Build failed with an exception." build.log; then
+            echo "::error::Jitpack build failed with an exception." && exit 1
+          fi
