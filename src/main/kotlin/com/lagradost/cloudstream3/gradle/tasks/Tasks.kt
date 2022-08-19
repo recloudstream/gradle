@@ -23,6 +23,11 @@ fun registerTasks(project: Project) {
         project.rootProject.tasks.register("makePluginsJson", MakePluginsJsonTask::class.java) {
             it.group = TASK_GROUP
 
+            val makeTask = project.tasks.findByName("make")
+            if (makeTask != null) {
+                it.dependsOn(makeTask)
+            }
+            
             it.outputs.upToDateWhen { false }
 
             it.outputFile.set(it.project.buildDir.resolve("plugins.json"))
