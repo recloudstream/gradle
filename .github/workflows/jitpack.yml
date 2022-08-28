@@ -8,14 +8,4 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Add SHORT_SHA env property with commit short sha
-        run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-10`" >> $GITHUB_ENV
-      - name: Fetch build.log
-        run: |
-          wget "https://jitpack.io/com/github/recloudstream/gradle/${GITHUB_REF##*/}-${SHORT_SHA}-1/build.log" -T 300
-          cat build.log
-      - name: Check status
-        run: |
-          if grep -q "FAILURE: Build failed with an exception." build.log; then
-            echo "::error::Jitpack build failed with an exception." && exit 1
-          fi
+      - uses: js6pak/start-jitpack@master
