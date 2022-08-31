@@ -16,6 +16,8 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     var repository: Repo? = null
         internal set
+    
+    var buildBranch: String = "builds"
 
     fun overrideUrlPrefix(url: String) {
         if (apkinfo == null) {
@@ -24,16 +26,51 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
         apkinfo!!.urlPrefix = url
     }
 
-    fun setRepo(user: String, repo: String) {
-        repository = Repo(user, repo)
+    fun setRepo(user: String, repo: String, url: String, rawLinkFormat: String) {
+        repository = Repo(user, repo, url, rawLinkFormat)
     }
-    fun setRepo(identifier: String) {
-        val split = identifier
-            .removePrefix("https://")
-            .removePrefix("github.com")
-            .removeSurrounding("/")
+    fun setRepo(user: String, repo: String, type: String) {
+        when {
+            type == "github" -> setRepo(user, repo, "https://github.com/${user}/${repo}", "https://raw.githubusercontent.com/${user}/${repo}/%branch%/%filename%")
+            type == "gitlab" -> setRepo(user, repo, "https://gitlab.com/${user}/${repo}", "https://gitlab.com/${user}/${repo}/-/raw/%branch%/%filename%")
+            type.startsWith("gitlab-") -> {
+                val domain = type.removePrefix("gitlab-")
+                setRepo(user, repo, "https://${domain}/${user}/${repo}", "https://${domain}/${user}/${repo}/-/raw/%branch%/%filename%")
+            }
+            type.startsWith("gitea-") -> {
+                val domain = type.removePrefix("gitea-")
+                setRepo(user, repo, "https://${domain}/${user}/${repo}", "https://${domain}/${user}/${repo}/raw/branch/%branch%/%filename%")
+            }
+            else -> throw IllegalArgumentException("Unknown type ${type}. Use github, gitlab, gitlab-<domain> or gitea-<domain> or set repository via setRepo(user, repo, url, rawLinkFormat)")
+        }
+    }
+    fun setRepo(url: String) {
+        var type: String? = null
+        
+        var split = when {
+             url.startsWith("https://github.com") -> {
+                type = "github"
+                   url
+                    .removePrefix("https://")
+                    .removePrefix("github.com")
+            }
+            url.startsWith("https://gitlab.com") -> {
+                type = "gitlab"
+                url
+                    .removePrefix("https://")
+                    .removePrefix("gitlab.com")
+            }
+            !url.startsWith("https://") -> { // assume default as github
+                type = "github"
+                url
+            }
+            else -> throw IllegalArgumentException("Unknown domain, please set repository via setRepo(user, repo, type)")
+        }
+            .removePrefix("/")
+            .removeSuffix("/")
             .split("/")
-        repository = Repo(split[0], split[1])
+        
+        setRepo(split[0], split[1], type)
     }
 
     internal var pluginClassName: String? = null
@@ -55,12 +92,11 @@ class ApkInfo(extension: CloudstreamExtension, release: String) {
     val jarFile = cache.resolve("cloudstream.jar")
 }
 
-class Repo(val user: String, val repo: String) {
-    val url: String
-        get() = "https://github.com/${user}/${repo}"
-
+class Repo(val user: String, val repo: String, val url: String, val rawLinkFormat: String) {
     fun getRawLink(filename: String, branch: String): String {
-        return "https://raw.githubusercontent.com/${user}/${repo}/${branch}/${filename}"
+        return rawLinkFormat
+            .replace("%filename%", filename)
+            .replace("%branch%", branch)
     }
 }
 
