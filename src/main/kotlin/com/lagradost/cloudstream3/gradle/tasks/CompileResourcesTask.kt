@@ -32,6 +32,7 @@ abstract class CompileResourcesTask : Exec() {
             executable = aaptExecutable.path
             args("compile")
             args("--dir", input.asFile.get().path)
+            args("-v")
             args("-o", tmpRes.path)
             execute()
         }
@@ -49,6 +50,8 @@ abstract class CompileResourcesTask : Exec() {
             args("-R", tmpRes.path)
             args("--manifest", manifestFile.asFile.get().path)
             args("--auto-add-overlay")
+            args("--warn-manifest-validation")
+            args("-v")
             args("-o", outputFile.asFile.get().path)
             execute()
         }
