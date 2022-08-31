@@ -60,6 +60,12 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
                     .split("/")
                 setRepo(split[0], split[1], "gitlab")
             }
+            !url.startsWith("https://") -> { // assume default as github
+                val split = url
+                    .removeSurrounding("/")
+                    .split("/")
+                    setRepo(split[0], split[1], "github")
+            }
             else -> throw IllegalArgumentException("Unknown domain, please set repository via setRepo(user, repo, type)")
         }
     }
