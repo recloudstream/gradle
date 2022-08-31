@@ -16,6 +16,8 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     var repository: Repo? = null
         internal set
+    
+    var buildBranch: String = "builds"
 
     fun overrideUrlPrefix(url: String) {
         if (apkinfo == null) {
@@ -43,31 +45,32 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
         }
     }
     fun setRepo(url: String) {
-        when {
-            url.startsWith("https://github.com") -> {
-                val split = url
+        var type: String? = null
+        
+        var split = when {
+             url.startsWith("https://github.com") -> {
+                type = "github"
+                   url
                     .removePrefix("https://")
                     .removePrefix("github.com")
-                    .removeSurrounding("/")
-                    .split("/")
-                setRepo(split[0], split[1], "github")
             }
             url.startsWith("https://gitlab.com") -> {
-                val split = url
+                type = "gitlab"
+                url
                     .removePrefix("https://")
                     .removePrefix("gitlab.com")
-                    .removeSurrounding("/")
-                    .split("/")
-                setRepo(split[0], split[1], "gitlab")
             }
             !url.startsWith("https://") -> { // assume default as github
-                val split = url
-                    .removeSurrounding("/")
-                    .split("/")
-                    setRepo(split[0], split[1], "github")
+                type = "github"
+                url
             }
             else -> throw IllegalArgumentException("Unknown domain, please set repository via setRepo(user, repo, type)")
         }
+            .removePrefix("/")
+            .removeSuffix("/")
+            .split("/")
+        
+        setRepo(split[0], split[1], type)
     }
 
     internal var pluginClassName: String? = null

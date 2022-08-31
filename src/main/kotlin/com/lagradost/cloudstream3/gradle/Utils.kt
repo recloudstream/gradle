@@ -36,7 +36,7 @@ fun Project.makePluginEntry(): PluginEntry {
     val repo = extension.repository
 
     return PluginEntry(
-        url = (if (repo == null) "" else repo.getRawLink("${this.name}.cs3", "builds")),
+        url = (if (repo == null) "" else repo.getRawLink("${this.name}.cs3", extension.buildBranch)),
         status = extension.status,
         version = version ?: -1,
         name = this.name,
