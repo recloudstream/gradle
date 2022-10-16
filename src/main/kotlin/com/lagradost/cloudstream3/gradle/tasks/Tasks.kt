@@ -23,7 +23,7 @@ fun registerTasks(project: Project) {
     if (project.rootProject.tasks.findByName("makePluginsJson") == null) {
         project.rootProject.tasks.register("makePluginsJson", MakePluginsJsonTask::class.java) {
             it.group = TASK_GROUP
-            
+
             it.outputs.upToDateWhen { false }
 
             it.outputFile.set(it.project.buildDir.resolve("plugins.json"))
@@ -105,7 +105,7 @@ fun registerTasks(project: Project) {
             }
 
             it.from(compileDexTask.outputFile)
-            
+
             val zip = it as Zip
             if (extension.requiresResources) {
                 zip.dependsOn(compileResources.get())
@@ -121,7 +121,7 @@ fun registerTasks(project: Project) {
                 task.logger.lifecycle("Made Cloudstream package at ${task.outputs.files.singleFile}")
             }
         }
-        project.rootProject.tasks.getByName("makePluginsJson").dependsOn(make)  
+        project.rootProject.tasks.getByName("makePluginsJson").dependsOn(make)
     }
 
     project.tasks.register("cleanCache", CleanCacheTask::class.java) {
