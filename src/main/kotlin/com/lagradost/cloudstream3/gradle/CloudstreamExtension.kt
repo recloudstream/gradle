@@ -16,7 +16,7 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     var repository: Repo? = null
         internal set
-    
+
     var buildBranch: String = "builds"
 
     fun overrideUrlPrefix(url: String) {
@@ -46,7 +46,7 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     }
     fun setRepo(url: String) {
         var type: String? = null
-        
+
         var split = when {
              url.startsWith("https://github.com") -> {
                 type = "github"
@@ -69,7 +69,7 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
             .removePrefix("/")
             .removeSuffix("/")
             .split("/")
-        
+
         setRepo(split[0], split[1], type)
     }
 

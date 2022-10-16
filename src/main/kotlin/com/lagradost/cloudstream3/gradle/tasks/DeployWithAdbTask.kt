@@ -40,7 +40,7 @@ abstract class DeployWithAdbTask : DefaultTask() {
         var file = make.outputs.files.singleFile
 
         var path = "/storage/emulated/0/Cloudstream3/plugins/"
-        
+
         device.push(file, RemoteFile(path + file.name))
 
         val args = arrayListOf("start", "-a", "android.intent.action.VIEW", "-d", "cloudstreamapp:")

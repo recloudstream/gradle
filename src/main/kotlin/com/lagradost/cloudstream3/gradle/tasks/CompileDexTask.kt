@@ -32,7 +32,7 @@ abstract class CompileDexTask : DefaultTask() {
 
     @get:OutputFile
     abstract val pluginClassFile: RegularFileProperty
-    
+
     @TaskAction
     fun compileDex() {
         val android = project.extensions.getByName("android") as BaseExtension

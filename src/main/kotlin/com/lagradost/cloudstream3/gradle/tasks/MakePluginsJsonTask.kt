@@ -34,7 +34,7 @@ abstract class MakePluginsJsonTask : DefaultTask() {
                     .build()
             ).toPrettyString()
         )
-        
+
         logger.lifecycle("Created ${outputFile.asFile.get()}")
     }
 }

@@ -11,7 +11,7 @@ fun Project.makeManifest(): PluginManifest {
     require(extension.pluginClassName != null) {
         "No plugin class found, make sure your plugin class is annotated with @CloudstreamPlugin"
     }
-    
+
     val version = this.version.toString().toIntOrNull(10)
     if (version == null) {
         logger.warn("'${project.version}' is not a valid version. Use an integer.")
