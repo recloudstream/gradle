@@ -26,9 +26,6 @@ dependencies {
     compileOnly("com.android.tools.build:gradle:7.2.2")
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
 
-    implementation("com.github.Aliucord.dex2jar:dex-translator:d5a5efb06c")
-    implementation("com.github.Aliucord.jadx:jadx-core:1a213e978d")
-    implementation("com.github.Aliucord.jadx:jadx-dex-input:1a213e978d")
     implementation("com.github.js6pak:jadb:fix-modified-time-SNAPSHOT")
 }
 
