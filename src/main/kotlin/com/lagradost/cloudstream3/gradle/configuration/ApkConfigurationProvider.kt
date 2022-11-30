@@ -4,8 +4,6 @@ import com.lagradost.cloudstream3.gradle.ApkInfo
 import com.lagradost.cloudstream3.gradle.createProgressLogger
 import com.lagradost.cloudstream3.gradle.download
 import com.lagradost.cloudstream3.gradle.getCloudstream
-import com.googlecode.d2j.reader.BaseDexFileReader
-import com.googlecode.d2j.reader.MultiDexFileReader
 import groovy.json.JsonSlurper
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
