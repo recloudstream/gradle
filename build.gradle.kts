@@ -28,7 +28,7 @@ dependencies {
     
     implementation("org.ow2.asm:asm:9.4")
     implementation("org.ow2.asm:asm-tree:9.4")
-    implementation("com.github.vidstige:jadb:v1.2.1")
+    implementation("com.github.vidstige:jadb:master-SNAPSHOT")
 }
 
 gradlePlugin {
