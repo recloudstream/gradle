@@ -33,6 +33,7 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
         when {
             type == "github" -> setRepo(user, repo, "https://github.com/${user}/${repo}", "https://raw.githubusercontent.com/${user}/${repo}/%branch%/%filename%")
             type == "gitlab" -> setRepo(user, repo, "https://gitlab.com/${user}/${repo}", "https://gitlab.com/${user}/${repo}/-/raw/%branch%/%filename%")
+            type == "codeberg" -> setRepo(user, repo, "https://codeberg.org/${user}/${repo}", "https://codeberg.org/${user}/${repo}/raw/branch/%branch%/%filename%")
             type.startsWith("gitlab-") -> {
                 val domain = type.removePrefix("gitlab-")
                 setRepo(user, repo, "https://${domain}/${user}/${repo}", "https://${domain}/${user}/${repo}/-/raw/%branch%/%filename%")
@@ -59,6 +60,12 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
                 url
                     .removePrefix("https://")
                     .removePrefix("gitlab.com")
+            }
+            url.startsWith("https://codeberg.org") -> {
+                type = "codeberg"
+                url
+                    .removePrefix("https://")
+                    .removePrefix("codeberg.org")
             }
             !url.startsWith("https://") -> { // assume default as github
                 type = "github"
