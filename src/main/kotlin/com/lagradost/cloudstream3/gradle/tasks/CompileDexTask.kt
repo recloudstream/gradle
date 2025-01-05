@@ -47,16 +47,20 @@ abstract class CompileDexTask : DefaultTask() {
                     minSdkVersion = minSdk,
                     debuggable = true,
                     dexPerClass = false,
-                    withDesugaring = minSdk >= 24,
+                    withDesugaring = true, // Make all plugins work on lower android versions
                     desugarBootclasspath = ClassFileProviderFactory(android.bootClasspath.map(File::toPath))
                         .also { closer.register(it) },
-                    desugarClasspath = ClassFileProviderFactory(listOf<Path>()).also { closer.register(it) },
+                    desugarClasspath = ClassFileProviderFactory(listOf<Path>()).also {
+                        closer.register(
+                            it
+                        )
+                    },
                     coreLibDesugarConfig = null,
-                    coreLibDesugarOutputKeepRuleFile = null,
                     messageReceiver = MessageReceiverImpl(
                         ErrorFormatMode.HUMAN_READABLE,
                         LoggerFactory.getLogger(CompileDexTask::class.java)
-                    )
+                    ),
+                    enableApiModeling = false // Unknown option, setting to false seems to work
                 )
             )
 
@@ -70,7 +74,8 @@ abstract class CompileDexTask : DefaultTask() {
 
                     dexBuilder.convert(
                         files.stream(),
-                        dexOutputDir.toPath()
+                        dexOutputDir.toPath(),
+                        null,
                     )
 
                     for (file in files) {
