@@ -43,6 +43,10 @@ abstract class DeployWithAdbTask : DefaultTask() {
 
         device.push(file, RemoteFile(path + file.name))
 
+        // Make the file readonly to work on newer android versions, this does not impact adb push.
+        // https://developer.android.com/about/versions/14/behavior-changes-14#safer-dynamic-code-loading
+        device.executeShell("chmod", "-w", path + file.name)
+
         val args = arrayListOf("start", "-a", "android.intent.action.VIEW", "-d", "cloudstreamapp:")
 
         if (waitForDebugger) {

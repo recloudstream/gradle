@@ -1,7 +1,6 @@
 package com.lagradost.cloudstream3.gradle.tasks
 
 import com.lagradost.cloudstream3.gradle.getCloudstream
-import com.lagradost.cloudstream3.gradle.entities.PluginManifest
 import com.lagradost.cloudstream3.gradle.makeManifest
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.tasks.ProcessLibraryManifest
@@ -12,7 +11,6 @@ import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import com.lagradost.cloudstream3.gradle.findCloudstream
 
 const val TASK_GROUP = "cloudstream"
 
@@ -47,11 +45,13 @@ fun registerTasks(project: Project) {
             it.input.from(kotlinTask.destinationDirectory)
         }
 
-        val javacTask = project.tasks.findByName("compileDebugJavaWithJavac") as AbstractCompile?
-        if (javacTask != null) {
-            it.dependsOn(javacTask)
-            it.input.from(javacTask.destinationDirectory)
-        }
+        // This task does not seem to be required for a successful cs3 file
+
+//        val javacTask = project.tasks.findByName("compileDebugJavaWithJavac") as AbstractCompile?
+//        if (javacTask != null) {
+//            it.dependsOn(javacTask)
+//            it.input.from(javacTask.destinationDirectory)
+//        }
 
         it.outputFile.set(intermediates.resolve("classes.dex"))
     }
