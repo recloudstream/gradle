@@ -1,9 +1,7 @@
 package com.lagradost.cloudstream3.gradle
 
 import org.gradle.api.Project
-import com.lagradost.cloudstream3.gradle.getCloudstream
 import com.lagradost.cloudstream3.gradle.entities.*
-import groovy.json.JsonBuilder
 
 fun Project.makeManifest(): PluginManifest {
     val extension = this.extensions.getCloudstream()
@@ -43,11 +41,15 @@ fun Project.makePluginEntry(): PluginEntry {
         internalName = this.name,
         authors = extension.authors,
         description = extension.description,
-        repositoryUrl = (if (repo == null) null else repo.url),
+        repositoryUrl = repo?.url,
         language = extension.language,
         iconUrl = extension.iconUrl,
         apiVersion = extension.apiVersion,
         tvTypes = extension.tvTypes,
-        fileSize = extension.fileSize
+        fileSize = extension.fileSize,
+        jarFileSize = extension.jarFileSize,
+        jarUrl = (
+                if (repo == null || extension.jarFileSize == null) null else repo.getRawLink("${this.name}.jar", extension.buildBranch)
+        ),
     )
 }

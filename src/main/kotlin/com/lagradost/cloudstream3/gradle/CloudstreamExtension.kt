@@ -2,8 +2,6 @@ package com.lagradost.cloudstream3.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
-import org.gradle.api.provider.Property
-import org.gradle.api.provider.ListProperty
 import javax.inject.Inject
 
 abstract class CloudstreamExtension @Inject constructor(project: Project) {
@@ -82,6 +80,7 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     internal var pluginClassName: String? = null
     internal var fileSize: Long? = null
+    internal var jarFileSize: Long? = null
 
     var requiresResources = false
     var description: String? = null
@@ -90,6 +89,11 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     var language: String? = null
     var tvTypes: List<String>? = null
     var iconUrl: String? = null
+    /**
+     * Enable this if your plugin does not use any android imports or app refrences.
+     * This will generate jar files using :make and these files can be checked with :ensureJarCompatibility
+     **/
+    var isCrossPlatform = false
 }
 
 class ApkInfo(extension: CloudstreamExtension, release: String) {
