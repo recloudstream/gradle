@@ -1,6 +1,5 @@
 package com.lagradost.cloudstream3.gradle.tasks
 
-import com.lagradost.cloudstream3.gradle.LibraryExtensionCompat
 import com.lagradost.cloudstream3.gradle.getCloudstream
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
 import com.android.build.gradle.options.SyncOptions.ErrorFormatMode
@@ -34,10 +33,14 @@ abstract class CompileDexTask : DefaultTask() {
     @get:OutputFile
     abstract val pluginClassFile: RegularFileProperty
 
-    @TaskAction
-    fun compileDex() {
-        val android = LibraryExtensionCompat(project)
-        val minSdk = android.minSdk
+    @get:Internal
+	abstract val pluginClassName: Property<String?>
+
+    @get:Input
+	abstract val minSdk: Property<Int>
+
+	@get:InputFiles
+	abstract val bootClasspath: ConfigurableFileCollection
 
     @TaskAction
     fun compileDex() {
@@ -103,4 +106,3 @@ abstract class CompileDexTask : DefaultTask() {
 
         logger.lifecycle("Compiled dex to ${outputFile.get()}")
     }
-}
