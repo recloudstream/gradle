@@ -1,6 +1,5 @@
 package com.lagradost.cloudstream3.gradle.tasks
 
-import CompilePluginJarTask
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.tasks.ProcessLibraryManifest
 import com.lagradost.cloudstream3.gradle.findCloudstream
