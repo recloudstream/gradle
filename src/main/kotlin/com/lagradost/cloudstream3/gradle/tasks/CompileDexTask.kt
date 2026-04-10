@@ -12,6 +12,7 @@ import com.google.common.io.Closer
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
@@ -38,16 +39,18 @@ abstract class CompileDexTask : DefaultTask() {
         val android = LibraryExtensionCompat(project)
         val minSdk = android.minSdk
 
+    @TaskAction
+    fun compileDex() {
         val dexOutputDir = outputFile.get().asFile.parentFile
 
         Closer.create().use { closer ->
             val dexBuilder = DexArchiveBuilder.createD8DexBuilder(
                 DexParameters(
-                    minSdkVersion = minSdk,
+                    minSdkVersion = minSdk.get(),
                     debuggable = true,
                     dexPerClass = false,
                     withDesugaring = true, // Make all plugins work on lower android versions
-                    desugarBootclasspath = ClassFileProviderFactory(android.bootClasspath.map(File::toPath))
+                    desugarBootclasspath = ClassFileProviderFactory(bootClasspath.files.map(File::toPath))
                         .also { closer.register(it) },
                     desugarClasspath = ClassFileProviderFactory(listOf<Path>()).also {
                         closer.register(
@@ -85,14 +88,13 @@ abstract class CompileDexTask : DefaultTask() {
 
                         for (annotation in classNode.visibleAnnotations.orEmpty() + classNode.invisibleAnnotations.orEmpty()) {
                             if (annotation.desc == "Lcom/lagradost/cloudstream3/plugins/CloudstreamPlugin;") {
-                                val cloudstream = project.extensions.getCloudstream()
-
-                                require(cloudstream.pluginClassName == null) {
+                                require(pluginClassName.orNull == null) {
                                     "Only 1 active plugin class per project is supported"
                                 }
 
-                                cloudstream.pluginClassName = classNode.name.replace('/', '.')
-                                    .also { pluginClassFile.asFile.orNull?.writeText(it) }
+                                val detectedName = classNode.name.replace('/', '.')
+                                pluginClassFile.asFile.orNull?.writeText(detectedName)
+                                pluginClassName.set(detectedName)
                             }
                         }
                     }
