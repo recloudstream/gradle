@@ -6,6 +6,7 @@ import com.lagradost.cloudstream3.gradle.findCloudstream
 import com.lagradost.cloudstream3.gradle.getCloudstream
 import com.lagradost.cloudstream3.gradle.makeManifest
 import com.lagradost.cloudstream3.gradle.makePluginEntry
+import com.lagradost.cloudstream3.gradle.sha256
 import groovy.json.JsonBuilder
 import groovy.json.JsonGenerator
 import org.gradle.api.Project
@@ -105,10 +106,12 @@ fun registerTasks(project: Project) {
         task.jarInputFile.fileProvider(jarTask.map { it.outputs.files.singleFile })
         task.targetJarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
         task.jarFileSize.set(extension.jarFileSize)
-        
+        task.jarHash.set(extension.jarHash)
+
         task.doLast {
             extension.pluginClassName = task.pluginClassName.orNull
             extension.jarFileSize = task.jarFileSize.orNull
+            extension.jarHash = task.jarHash.orNull
         }
     }
 
@@ -164,6 +167,7 @@ fun registerTasks(project: Project) {
 
             it.doLast { task ->
                 extension.fileSize = task.outputs.files.singleFile.length()
+                extension.fileHash = sha256(task.outputs.files.singleFile)
                 task.logger.lifecycle("Made Cloudstream package at ${task.outputs.files.singleFile}")
             }
         }
