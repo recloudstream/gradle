@@ -1,25 +1,25 @@
 package com.lagradost.cloudstream3.gradle.tasks
 
-import com.lagradost.cloudstream3.gradle.getCloudstream
-import com.lagradost.cloudstream3.gradle.makeManifest
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.tasks.ProcessLibraryManifest
+import com.lagradost.cloudstream3.gradle.getCloudstream
+import com.lagradost.cloudstream3.gradle.makeManifest
 import groovy.json.JsonBuilder
 import groovy.json.JsonGenerator
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.tasks.AbstractCopyTask
+import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.ByteArrayOutputStream
-import org.gradle.api.GradleException
 import java.io.File
 
 const val TASK_GROUP = "cloudstream"
 
 fun registerTasks(project: Project) {
     val extension = project.extensions.getCloudstream()
-    val intermediates = project.buildDir.resolve("intermediates")
+    val intermediatesDir = project.layout.buildDirectory.dir("intermediates")
 
     if (project.rootProject.tasks.findByName("makePluginsJson") == null) {
         project.rootProject.tasks.register("makePluginsJson", MakePluginsJsonTask::class.java) { task ->
@@ -80,7 +80,7 @@ fun registerTasks(project: Project) {
             it.input.set(android.sourceSets.getByName("main").res.srcDirs.single())
             it.manifestFile.set(processManifestTask.manifestOutputFile)
 
-            it.outputFile.set(intermediates.resolve("res.apk"))
+            it.outputFile.set(intermediatesDir.map { it.file("res.apk") })
 
             it.doLast { _ ->
                 val resApkFile = it.outputFile.asFile.get()
@@ -114,44 +114,13 @@ fun registerTasks(project: Project) {
         }
     }
 
-    val ensureJarCompatibility = project.tasks.register("ensureJarCompatibility") {
-        it.group = TASK_GROUP
-        it.dependsOn("compilePluginJar")
-        it.doLast { task ->
-            if (!extension.isCrossPlatform) {
-                return@doLast
-            }
-
-            val jarFile = File("${project.buildDir}/${project.name}.jar")
-            if (!jarFile.exists()) {
-                throw GradleException("Jar file does not exist.")
-                return@doLast
-            }
-
-            // Run jdeps command
-            try {
-                val jdepsOutput = ByteArrayOutputStream()
-                val jdepsCommand = listOf("jdeps", "--print-module-deps", jarFile.absolutePath)
-
-                project.exec { execTask ->
-                    execTask.setCommandLine(jdepsCommand)
-                    execTask.setStandardOutput(jdepsOutput)
-                    execTask.setErrorOutput(System.err)
-                    execTask.setIgnoreExitValue(true)
-                }
-
-                val output = jdepsOutput.toString()
-
-                // Check if 'android.' is in the output
-                if (output.isEmpty()) {
-                    task.logger.warn("No output from jdeps! Cannot analyze jar file for Android imports!")
-                } else if (output.contains("android.")) {
-                    throw GradleException("The cross-platform jar file contains Android imports! This will cause compatibility issues.\nRemove 'isCrossPlatform = true' or remove the Android imports.")
-                } else {
-                    task.logger.lifecycle("SUCCESS: The cross-platform jar file does not contain Android imports")
-                }
-            } catch (e: org.gradle.process.internal.ExecException) {
-                task.logger.warn("Jdeps failed! Cannot analyze jar file for Android imports!")
+    project.tasks.register("ensureJarCompatibility", EnsureJarCompatibilityTask::class.java) { task ->
+        task.dependsOn("compilePluginJar")
+        task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
+        if (extension.isCrossPlatform) {
+            task.jarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
+            task.doLast {
+                task.checkOutput()
             }
         }
     }
@@ -164,16 +133,16 @@ fun registerTasks(project: Project) {
                 it.dependsOn(compilePluginJar)
             }
 
-            val manifestFile = intermediates.resolve("manifest.json")
+            val manifestFile = intermediatesDir.map { it.file("manifest.json") }.get()
             it.from(manifestFile)
             it.doFirst {
                 if (extension.pluginClassName == null) {
-                    if (pluginClassFile.exists()) {
-                        extension.pluginClassName = pluginClassFile.readText()
+                    if (pluginClassFile.get().asFile.exists()) {
+                        extension.pluginClassName = pluginClassFile.get().asFile.readText()
                     }
                 }
 
-                manifestFile.writeText(
+                manifestFile.asFile.writeText(
                     JsonBuilder(
                         project.makeManifest(),
                         JsonGenerator.Options()
@@ -193,7 +162,7 @@ fun registerTasks(project: Project) {
             zip.archiveBaseName.set(project.name)
             zip.archiveExtension.set("cs3")
             zip.archiveVersion.set("")
-            zip.destinationDirectory.set(project.buildDir)
+            zip.destinationDirectory.set(project.layout.buildDirectory)
 
             it.doLast { task ->
                 extension.fileSize = task.outputs.files.singleFile.length()
