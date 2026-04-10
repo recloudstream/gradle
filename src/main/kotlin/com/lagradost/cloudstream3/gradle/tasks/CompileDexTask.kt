@@ -106,3 +106,4 @@ abstract class CompileDexTask : DefaultTask() {
 
         logger.lifecycle("Compiled dex to ${outputFile.get()}")
     }
+}
