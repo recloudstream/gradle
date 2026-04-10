@@ -1,7 +1,7 @@
 package com.lagradost.cloudstream3.gradle.tasks
 
+import com.lagradost.cloudstream3.gradle.LibraryExtensionCompat
 import com.lagradost.cloudstream3.gradle.getCloudstream
-import com.android.build.gradle.BaseExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.Input
@@ -17,9 +17,9 @@ abstract class DeployWithAdbTask : DefaultTask() {
 
     @TaskAction
     fun deployWithAdb() {
-        val android = project.extensions.getByName("android") as BaseExtension
+        val android = LibraryExtensionCompat(project)
 
-        AdbServerLauncher(Subprocess(), android.adbExecutable.absolutePath).launch()
+        AdbServerLauncher(Subprocess(), android.adb.absolutePath).launch()
         val jadbConnection = JadbConnection()
         val devices = jadbConnection.devices.filter {
             try {

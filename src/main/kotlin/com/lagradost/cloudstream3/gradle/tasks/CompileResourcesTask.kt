@@ -1,6 +1,6 @@
 package com.lagradost.cloudstream3.gradle.tasks
 
-import com.android.build.gradle.BaseExtension
+import com.lagradost.cloudstream3.gradle.LibraryExtensionCompat
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.*
@@ -20,7 +20,7 @@ abstract class CompileResourcesTask : Exec() {
     abstract val outputFile: RegularFileProperty
 
     override fun exec() {
-        val android = project.extensions.getByName("android") as BaseExtension
+        val android = LibraryExtensionCompat(project)
 
         val aaptExecutable = android.sdkDirectory.resolve("build-tools")
             .resolve(android.buildToolsVersion)
@@ -44,7 +44,7 @@ abstract class CompileResourcesTask : Exec() {
                 "-I",
                 android.sdkDirectory
                     .resolve("platforms")
-                    .resolve(android.compileSdkVersion!!)
+                    .resolve(android.compileSdk)
                     .resolve("android.jar")
             )
             args("-R", tmpRes.path)
