@@ -47,9 +47,8 @@ fun registerTasks(project: Project) {
         task.pluginClassFile.set(pluginClassFile)
         task.outputFile.set(intermediatesDir.map { dir -> dir.file("classes.dex") })
 
-        val android = project.extensions.findByName("android") as? BaseExtension
-            ?: error("Android plugin not found")
-        task.minSdk.set(android.defaultConfig.minSdk ?: 21)
+        val android = LibraryExtensionCompat(project)
+        task.minSdk.set(android.minSdk)
         task.bootClasspath.from(android.bootClasspath)
 
         val extension = project.extensions.getCloudstream()
@@ -76,8 +75,8 @@ fun registerTasks(project: Project) {
 
             val android = LibraryExtensionCompat(project)
             it.input.set(android.mainResSrcDir)
-            it.manifestFile.set(processManifestTask.manifestOutputFile)
 
+            it.manifestFile.set(processManifestTask.manifestOutputFile)
             it.outputFile.set(intermediatesDir.map { it.file("res.apk") })
 
             it.doLast { _ ->
