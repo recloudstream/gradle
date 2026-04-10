@@ -14,8 +14,10 @@ data class PluginEntry(
     val tvTypes: List<String>?,
     val iconUrl: String?,
     val apiVersion: Int,
+    val fileHash: String?,
 
     // For cross-platform
     val jarFileSize: Long?,
-    val jarUrl: String?
+    val jarUrl: String?,
+    val jarHash: String?
 )
