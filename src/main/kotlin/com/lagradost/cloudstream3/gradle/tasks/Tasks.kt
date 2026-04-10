@@ -1,19 +1,18 @@
 package com.lagradost.cloudstream3.gradle.tasks
 
+import CompilePluginJarTask
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.tasks.ProcessLibraryManifest
+import com.lagradost.cloudstream3.gradle.findCloudstream
 import com.lagradost.cloudstream3.gradle.getCloudstream
 import com.lagradost.cloudstream3.gradle.makeManifest
+import com.lagradost.cloudstream3.gradle.makePluginEntry
 import groovy.json.JsonBuilder
 import groovy.json.JsonGenerator
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.tasks.AbstractCopyTask
-import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.bundling.Zip
-import org.gradle.api.tasks.compile.AbstractCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.File
 
 const val TASK_GROUP = "cloudstream"
 
