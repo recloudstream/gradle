@@ -5,26 +5,6 @@ import com.lagradost.cloudstream3.gradle.entities.*
 import java.io.File
 import java.security.MessageDigest
 
-fun Project.makeManifest(): PluginManifest {
-    val extension = this.extensions.getCloudstream()
-
-    require(extension.pluginClassName != null) {
-        "No plugin class found, make sure your plugin class is annotated with @CloudstreamPlugin"
-    }
-
-    val version = this.version.toString().toIntOrNull(10)
-    if (version == null) {
-        logger.warn("'${project.version}' is not a valid version. Use an integer.")
-    }
-
-    return PluginManifest(
-        pluginClassName = extension.pluginClassName,
-        name = this.name,
-        version = version ?: -1,
-        requiresResources = extension.requiresResources
-    )
-}
-
 fun sha256(file: File): String {
     val digest = MessageDigest.getInstance("SHA-256")
 

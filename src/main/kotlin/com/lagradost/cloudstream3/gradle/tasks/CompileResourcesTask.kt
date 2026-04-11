@@ -1,10 +1,8 @@
 package com.lagradost.cloudstream3.gradle.tasks
 
-import com.lagradost.cloudstream3.gradle.LibraryExtensionCompat
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.*
-import org.gradle.internal.os.OperatingSystem
 import java.io.File
 
 abstract class CompileResourcesTask : Exec() {
@@ -19,17 +17,16 @@ abstract class CompileResourcesTask : Exec() {
     @get:OutputFile
     abstract val outputFile: RegularFileProperty
 
+    @get:InputFile
+    abstract val aaptExecutable: RegularFileProperty
+
+    @get:InputFile
+    abstract val androidJar: RegularFileProperty
+
     override fun exec() {
-        val android = LibraryExtensionCompat(project)
-
-        val aaptExecutable = android.sdkDirectory.resolve("build-tools")
-            .resolve(android.buildToolsVersion)
-            .resolve(if (OperatingSystem.current().isWindows) "aapt2.exe" else "aapt2")
-
         val tmpRes = File.createTempFile("res", ".zip")
-
         execActionFactory.newExecAction().apply {
-            executable = aaptExecutable.path
+            executable = aaptExecutable.asFile.get().path
             args("compile")
             args("--dir", input.asFile.get().path)
             args("-v")
@@ -38,15 +35,9 @@ abstract class CompileResourcesTask : Exec() {
         }
 
         execActionFactory.newExecAction().apply {
-            executable = aaptExecutable.path
+            executable = aaptExecutable.asFile.get().path
             args("link")
-            args(
-                "-I",
-                android.sdkDirectory
-                    .resolve("platforms")
-                    .resolve(android.compileSdk)
-                    .resolve("android.jar")
-            )
+            args( "-I", androidJar.asFile.get().path)
             args("-R", tmpRes.path)
             args("--manifest", manifestFile.asFile.get().path)
             args("--auto-add-overlay")
