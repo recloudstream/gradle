@@ -8,7 +8,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.provider.Property
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.GradleException
-import java.io.File
 
 abstract class EnsureJarCompatibilityTask : Exec() {
 

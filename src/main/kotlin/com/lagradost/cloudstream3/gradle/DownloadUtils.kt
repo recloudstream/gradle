@@ -9,7 +9,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 
-
 fun createProgressLogger(project: Project, loggerCategory: String): ProgressLogger {
     return createProgressLogger((project as ProjectInternal).services, loggerCategory)
 }
