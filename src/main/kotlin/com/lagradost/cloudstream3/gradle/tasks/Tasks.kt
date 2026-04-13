@@ -24,7 +24,6 @@ fun registerTasks(project: Project) {
 
     project.tasks.register("generateSources", GenerateSourcesTask::class.java) { task ->
         task.group = TASK_GROUP
-        val extension = project.extensions.getCloudstream()
         val apkinfoProvider = project.provider {
             extension.apkinfo ?: error("apkinfo not found")
         }
@@ -49,7 +48,7 @@ fun registerTasks(project: Project) {
         task.minSdk.set(android.minSdk)
         task.bootClasspath.from(android.bootClasspath)
 
-        val kotlinTask = project.tasks.findByName("compileDebugKotlin") as KotlinCompile?
+        val kotlinTask = project.tasks.findByName("compileDebugKotlin") as? KotlinCompile
         if (kotlinTask != null) {
             task.dependsOn(kotlinTask)
             task.input.from(kotlinTask.destinationDirectory)
@@ -128,7 +127,7 @@ fun registerTasks(project: Project) {
             project.provider {
                 project.version.toString().toIntOrNull(10).also { v ->
                     if (v == null) project.logger.warn(
-                        "'${project.version}' is not a valid version. Use an integer."
+                        "'${project.version}' is not a valid version in ${project.name}. Use an integer."
                     )
                 } ?: -1
             }
@@ -204,7 +203,6 @@ fun registerTasks(project: Project) {
 
     project.tasks.register("cleanCache", CleanCacheTask::class.java) { task ->
         task.group = TASK_GROUP
-        val extension = project.extensions.getCloudstream()
         val apkinfoProvider = project.provider {
             extension.apkinfo ?: error("apkinfo not found")
         }

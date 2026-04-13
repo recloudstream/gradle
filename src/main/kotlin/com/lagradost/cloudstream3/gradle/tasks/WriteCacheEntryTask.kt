@@ -20,15 +20,15 @@ abstract class WriteCacheEntryTask : DefaultTask() {
     @get:Input abstract val pluginName: Property<String>
     @get:Input abstract val pluginVersion: Property<Int>
     @get:Input @get:Optional abstract val repoUrl: Property<String>
-    @get:Input @get:Optional abstract val repoRawLink: Property<String>  // template: "{file}"
-    @get:Input @get:Optional abstract val buildBranch: Property<String>
+    @get:Input @get:Optional abstract val repoRawLink: Property<String> // template: "{file}"
+    @get:Input abstract val buildBranch: Property<String>
     @get:Input abstract val status: Property<Int>
     @get:Input abstract val authors: ListProperty<String>
     @get:Input @get:Optional abstract val pluginDescription: Property<String>
     @get:Input @get:Optional abstract val language: Property<String>
     @get:Input @get:Optional abstract val iconUrl: Property<String>
     @get:Input abstract val apiVersion: Property<Int>
-    @get:Input abstract val tvTypes: ListProperty<String>
+    @get:Input @get:Optional abstract val tvTypes: ListProperty<String>
 
     @get:InputFile abstract val cs3File: RegularFileProperty
     @get:InputFile @get:Optional abstract val jarFile: RegularFileProperty
@@ -42,7 +42,7 @@ abstract class WriteCacheEntryTask : DefaultTask() {
 
         val name = pluginName.get()
         val rawTemplate = repoRawLink.orNull
-        fun rawLink(file: String) = rawTemplate?.replace("{file}", file)
+        fun rawLink(file: String): String? = rawTemplate?.replace("{file}", file)
 
         val entry = PluginEntry(
             url = rawLink("${name}.cs3") ?: "",
@@ -56,7 +56,7 @@ abstract class WriteCacheEntryTask : DefaultTask() {
             language = language.orNull,
             iconUrl = iconUrl.orNull,
             apiVersion = apiVersion.get(),
-            tvTypes = tvTypes.get(),
+            tvTypes = tvTypes.orNull,
             fileSize = cs3.length(),
             fileHash = sha256(cs3),
             jarFileSize = jar?.length(),
@@ -65,7 +65,10 @@ abstract class WriteCacheEntryTask : DefaultTask() {
         )
 
         outputFile.asFile.get().writeText(
-            JsonBuilder(entry, JsonGenerator.Options().excludeNulls().build()).toPrettyString()
+            JsonBuilder(
+                entry,
+                JsonGenerator.Options().excludeNulls().build()
+            ).toPrettyString()
         )
     }
 

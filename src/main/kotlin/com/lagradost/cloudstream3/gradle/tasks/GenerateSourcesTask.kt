@@ -26,12 +26,9 @@ abstract class GenerateSourcesTask : DefaultTask() {
     fun generate() {
         val logger = progressLoggerFactory
             .newOperation("Download sources")
-            .also { it.description = "Download sources" }
+            .apply { description = "Download sources" }
 
         val url = URI("${urlPrefix.get()}/app-sources.jar").toURL()
-        url.download(
-            sourcesJarFile.get().asFile,
-            logger
-        )
+        url.download(sourcesJarFile.get().asFile, logger)
     }
 }
