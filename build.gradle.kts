@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.3.20"
     id("java-gradle-plugin")
     id("maven-publish")
 }
@@ -39,13 +39,13 @@ dependencies {
     implementation(kotlin("stdlib", kotlin.coreLibrariesVersion))
     compileOnly(gradleApi())
 
-    compileOnly("com.google.guava:guava:30.1.1-jre")
-    compileOnly("com.android.tools:sdk-common:30.0.0")
-    compileOnly("com.android.tools.build:gradle:8.7.3")
-    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0")
+    compileOnly("com.google.guava:guava:33.6.0-jre")
+    compileOnly("com.android.tools:sdk-common:32.1.1")
+    compileOnly("com.android.tools.build:gradle:9.1.1")
+    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.20")
 
-    implementation("org.ow2.asm:asm:9.4")
-    implementation("org.ow2.asm:asm-tree:9.4")
+    implementation("org.ow2.asm:asm:9.9.1")
+    implementation("org.ow2.asm:asm-tree:9.9.1")
     implementation("com.github.vidstige:jadb:v1.2.1")
 }
 

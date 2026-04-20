@@ -1,3 +1,6 @@
+// BaseExtension is deprecated and will be removed in AGP 10.0
+@file:Suppress("DEPRECATION")
+
 package com.lagradost.cloudstream3.gradle
 
 import com.android.build.api.dsl.LibraryExtension
