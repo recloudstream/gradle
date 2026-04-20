@@ -22,7 +22,7 @@ abstract class DeployWithAdbTask : DefaultTask() {
     @set:Option(option = "wait-for-debugger", description = "Enables debugging flag when starting the discord activity")
     var waitForDebugger: Boolean = false
 
-    @get:Input abstract var adbPath: Property<String>
+    @get:Input abstract val adbPath: Property<String>
     @get:InputFile abstract val pluginFile: RegularFileProperty
 
     @TaskAction
