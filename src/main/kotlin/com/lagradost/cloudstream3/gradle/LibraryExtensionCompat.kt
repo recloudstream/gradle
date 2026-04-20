@@ -1,8 +1,8 @@
 package com.lagradost.cloudstream3.gradle
 
-import com.android.build.gradle.BaseExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
+import com.android.build.gradle.BaseExtension
 import org.gradle.api.Project
 import java.io.File
 

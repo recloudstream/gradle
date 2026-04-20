@@ -2,16 +2,10 @@ package com.lagradost.cloudstream3.gradle.tasks
 
 import com.android.build.gradle.tasks.ProcessLibraryManifest
 import com.lagradost.cloudstream3.gradle.LibraryExtensionCompat
-import com.lagradost.cloudstream3.gradle.findCloudstream
 import com.lagradost.cloudstream3.gradle.getCloudstream
-import com.lagradost.cloudstream3.gradle.makeManifest
-import com.lagradost.cloudstream3.gradle.makePluginEntry
-import com.lagradost.cloudstream3.gradle.sha256
-import groovy.json.JsonBuilder
-import groovy.json.JsonGenerator
 import org.gradle.api.Project
-import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.bundling.Zip
+import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 const val TASK_GROUP = "cloudstream"
@@ -25,19 +19,25 @@ fun registerTasks(project: Project) {
             task.group = TASK_GROUP
             task.outputs.upToDateWhen { false }
             task.outputFile.set(task.project.layout.buildDirectory.file("plugins.json"))
-            task.pluginEntriesJson.set(
-                task.project.provider {
-                    val lst = task.project.allprojects.mapNotNull { sub ->
-                        sub.extensions.findCloudstream()?.let { sub.makePluginEntry() }
-                    }
-                    JsonBuilder(lst, JsonGenerator.Options().excludeNulls().build()).toPrettyString()
-                }
-            )
         }
     }
 
-    project.tasks.register("genSources", GenSourcesTask::class.java) {
-        it.group = TASK_GROUP
+    project.tasks.register("generateSources", GenerateSourcesTask::class.java) { task ->
+        task.group = TASK_GROUP
+        val apkinfoProvider = project.provider {
+            extension.apkinfo ?: error(
+                "Task 'generateSources' requires APK info to be configured, " +
+                "but none was found. If this project does not use cloudstream.jar, " +
+                "this task does not apply."
+            )
+        }
+
+        task.urlPrefix.set(apkinfoProvider.map { it.urlPrefix })
+        task.sourcesJarFile.set(project.layout.file(
+            project.provider {
+                apkinfoProvider.get().cache.resolve("cloudstream-sources.jar")
+            })
+        )
     }
 
     val pluginClassFile = intermediatesDir.map { it.file("pluginClass") }
@@ -52,70 +52,62 @@ fun registerTasks(project: Project) {
         task.minSdk.set(android.minSdk)
         task.bootClasspath.from(android.bootClasspath)
 
-        val extension = project.extensions.getCloudstream()
-        task.pluginClassName.set(extension.pluginClassName)
-
-        val kotlinTask = project.tasks.findByName("compileDebugKotlin") as KotlinCompile?
+        val kotlinTask = project.tasks.findByName("compileDebugKotlin") as? KotlinCompile
         if (kotlinTask != null) {
             task.dependsOn(kotlinTask)
             task.input.from(kotlinTask.destinationDirectory)
         }
-
-        task.doLast {
-            extension.pluginClassName = task.pluginClassName.orNull
-        }
     }
 
+    // resApkFile resolved as a provider at configuration time so it can be
+    // referenced in the make task without capturing project at execution time.
+    val resApkFile = intermediatesDir.map { it.file("res.apk") }
+
     val compileResources =
-        project.tasks.register("compileResources", CompileResourcesTask::class.java) {
-            it.group = TASK_GROUP
+        project.tasks.register("compileResources", CompileResourcesTask::class.java) { task ->
+            task.group = TASK_GROUP
 
             val processManifestTask =
-                project.tasks.getByName("processDebugManifest") as ProcessLibraryManifest
-            it.dependsOn(processManifestTask)
+                project.tasks.named("processDebugManifest", ProcessLibraryManifest::class.java)
+            task.dependsOn(processManifestTask)
 
             val android = LibraryExtensionCompat(project)
-            it.input.set(android.mainResSrcDir)
+            task.input.set(android.mainResSrcDir)
 
-            it.manifestFile.set(processManifestTask.manifestOutputFile)
-            it.outputFile.set(intermediatesDir.map { it.file("res.apk") })
+            task.manifestFile.set(processManifestTask.flatMap { it.manifestOutputFile })
+            task.outputFile.set(resApkFile)
 
-            it.doLast { _ ->
-                val resApkFile = it.outputFile.asFile.get()
+            task.aaptExecutable.set(project.layout.file(project.provider {
+                android.sdkDirectory
+                    .resolve("build-tools")
+                    .resolve(android.buildToolsVersion)
+                    .resolve(if (OperatingSystem.current().isWindows) "aapt2.exe" else "aapt2")
+            }))
 
-                if (resApkFile.exists()) {
-                    project.tasks.named("make", AbstractCopyTask::class.java) {
-                        it.from(project.zipTree(resApkFile)) { copySpec ->
-                            copySpec.exclude("AndroidManifest.xml")
-                        }
-                    }
-                }
-            }
+            task.androidJar.set(project.layout.file(project.provider {
+                android.sdkDirectory
+                    .resolve("platforms")
+                    .resolve(android.compileSdk)
+                    .resolve("android.jar")
+            }))
         }
 
     val compilePluginJar = project.tasks.register("compilePluginJar", CompilePluginJarTask::class.java) { task ->
         task.group = TASK_GROUP
-        task.dependsOn("createFullJarDebug") // Ensure JAR is built before copying
-        task.dependsOn("compileDex") // compileDex creates pluginClass
+        task.dependsOn(compileDex) // compileDex creates pluginClass
+        task.finalizedBy("ensureJarCompatibility") // Ensure compiled JAR is valid
+
         val jarTask = project.tasks.named("createFullJarDebug")
+        task.dependsOn(jarTask) // Ensure JAR is built before copying
 
         task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
         task.pluginClassFile.set(pluginClassFile)
-        task.pluginClassName.set(extension.pluginClassName)
         task.jarInputFile.fileProvider(jarTask.map { it.outputs.files.singleFile })
         task.targetJarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
-        task.jarFileSize.set(extension.jarFileSize)
-        task.jarHash.set(extension.jarHash)
-
-        task.doLast {
-            extension.pluginClassName = task.pluginClassName.orNull
-            extension.jarFileSize = task.jarFileSize.orNull
-            extension.jarHash = task.jarHash.orNull
-        }
     }
 
     project.tasks.register("ensureJarCompatibility", EnsureJarCompatibilityTask::class.java) { task ->
-        task.dependsOn("compilePluginJar")
+        task.dependsOn(compilePluginJar)
         task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
         if (extension.isCrossPlatform) {
             task.jarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
@@ -125,60 +117,116 @@ fun registerTasks(project: Project) {
         }
     }
 
-    project.afterEvaluate {
-        val make = project.tasks.register("make", Zip::class.java) {
-            val compileDexTask = compileDex.get()
-            it.dependsOn(compileDexTask)
-            if (extension.isCrossPlatform) {
-                it.dependsOn(compilePluginJar)
+    val manifestFile = intermediatesDir.map { it.file("manifest.json") }
+
+    val generateManifest = project.tasks.register("generateManifest", GenerateManifestTask::class.java) { task ->
+        task.group = TASK_GROUP
+        task.dependsOn(compileDex)
+
+        task.pluginClassFile.set(pluginClassFile)
+        task.outputFile.set(manifestFile)
+
+        task.pluginName.set(project.name)
+        task.pluginVersion.set(
+            project.provider {
+                project.version.toString().toIntOrNull(10).also { v ->
+                    if (v == null) project.logger.warn(
+                        "'${project.version}' is not a valid version in ${project.name}. Use an integer."
+                    )
+                } ?: -1
             }
+        )
+        task.requiresResources.set(extension.requiresResources)
+    }
 
-            val manifestFile = intermediatesDir.map { it.file("manifest.json") }.get()
-            it.from(manifestFile)
-            it.doFirst {
-                if (extension.pluginClassName == null) {
-                    if (pluginClassFile.get().asFile.exists()) {
-                        extension.pluginClassName = pluginClassFile.get().asFile.readText()
-                    }
-                }
+    val make = project.tasks.register("make", Zip::class.java) { task ->
+        task.group = TASK_GROUP
+        task.dependsOn(compileDex)
+        if (extension.isCrossPlatform) {
+            task.dependsOn(compilePluginJar)
+        }
 
-                manifestFile.asFile.writeText(
-                    JsonBuilder(
-                        project.makeManifest(),
-                        JsonGenerator.Options()
-                            .excludeNulls()
-                            .build()
-                    ).toString()
-                )
-            }
+        task.dependsOn(generateManifest)
 
-            it.from(compileDexTask.outputFile)
+        task.from(manifestFile)
+        task.from(compileDex.flatMap { it.outputFile })
 
-            val zip = it as Zip
-            if (extension.requiresResources) {
-                zip.dependsOn(compileResources.get())
-            }
-            zip.isPreserveFileTimestamps = false
-            zip.archiveBaseName.set(project.name)
-            zip.archiveExtension.set("cs3")
-            zip.archiveVersion.set("")
-            zip.destinationDirectory.set(project.layout.buildDirectory)
-
-            it.doLast { task ->
-                extension.fileSize = task.outputs.files.singleFile.length()
-                extension.fileHash = sha256(task.outputs.files.singleFile)
-                task.logger.lifecycle("Made Cloudstream package at ${task.outputs.files.singleFile}")
+        if (extension.requiresResources) {
+            task.dependsOn(compileResources)
+            task.from(project.zipTree(resApkFile)) { copySpec ->
+                copySpec.exclude("AndroidManifest.xml")
             }
         }
-        project.rootProject.tasks.getByName("makePluginsJson").dependsOn(make)
+
+        task.isPreserveFileTimestamps = false
+        task.archiveBaseName.set(project.name)
+        task.archiveExtension.set("cs3")
+        task.archiveVersion.set("")
+        task.destinationDirectory.set(project.layout.buildDirectory)
+
+        task.doLast {
+            task.logger.lifecycle("Made CloudStream package at ${task.outputs.files.singleFile}")
+        }
     }
 
-    project.tasks.register("cleanCache", CleanCacheTask::class.java) {
-        it.group = TASK_GROUP
+    val pluginEntryFile = project.layout.buildDirectory.file("plugin-entry.json")
+
+    val writeCacheEntry = project.tasks.register("writeCacheEntry", WriteCacheEntryTask::class.java) { task ->
+        task.group = TASK_GROUP
+        task.dependsOn(make)
+        if (extension.isCrossPlatform) task.dependsOn(compilePluginJar)
+
+        task.pluginName.set(project.name)
+        task.pluginVersion.set(project.provider {
+            project.version.toString().toIntOrNull(10) ?: -1
+        })
+        task.repoUrl.set(project.provider { extension.repository?.url })
+        task.repoRawLink.set(project.provider { extension.repository?.getRawLink("{file}", extension.buildBranch) })
+        task.buildBranch.set(project.provider { extension.buildBranch })
+        task.status.set(project.provider { extension.status })
+        task.authors.set(project.provider { extension.authors })
+        task.pluginDescription.set(project.provider { extension.description })
+        task.language.set(project.provider { extension.language })
+        task.iconUrl.set(project.provider { extension.iconUrl })
+        task.apiVersion.set(project.provider { extension.apiVersion })
+        task.tvTypes.set(project.provider { extension.tvTypes })
+
+        task.cs3File.set(make.flatMap { zip ->
+            zip.outputs.files.let { project.layout.buildDirectory.file("${project.name}.cs3") }
+        })
+        if (extension.isCrossPlatform) {
+            task.jarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
+        }
+        task.outputFile.set(pluginEntryFile)
     }
 
-    project.tasks.register("deployWithAdb", DeployWithAdbTask::class.java) {
-        it.group = TASK_GROUP
-        it.dependsOn("make")
+    project.rootProject.tasks.named("makePluginsJson", MakePluginsJsonTask::class.java).configure { task ->
+        task.dependsOn(writeCacheEntry)
+        task.pluginEntryFiles.from(pluginEntryFile)
+    }
+
+    project.tasks.register("cleanCache", CleanCacheTask::class.java) { task ->
+        task.group = TASK_GROUP
+        val apkinfoProvider = project.provider {
+            extension.apkinfo ?: error(
+                "Cannot clean cache: no cached APK info found. " +
+                "This task only applies to projects that depend on cloudstream.jar."
+            )
+        }
+
+        task.jarFile.set(project.layout.file(
+            apkinfoProvider.map { it.jarFile }
+        ))
+    }
+
+    project.tasks.register("deployWithAdb", DeployWithAdbTask::class.java) { task ->
+        task.group = TASK_GROUP
+        task.dependsOn(make)
+
+        val android = LibraryExtensionCompat(project)
+        task.adbPath.set(android.adb.absolutePath)
+        task.pluginFile.set(project.layout.file(
+            make.map { it.outputs.files.singleFile }
+        ))
     }
 }

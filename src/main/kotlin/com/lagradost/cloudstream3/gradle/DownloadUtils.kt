@@ -1,23 +1,9 @@
 package com.lagradost.cloudstream3.gradle
 
-import org.gradle.api.Project
-import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.internal.logging.progress.ProgressLogger
-import org.gradle.internal.logging.progress.ProgressLoggerFactory
-import org.gradle.internal.service.ServiceRegistry
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
-
-
-fun createProgressLogger(project: Project, loggerCategory: String): ProgressLogger {
-    return createProgressLogger((project as ProjectInternal).services, loggerCategory)
-}
-
-fun createProgressLogger(services: ServiceRegistry, loggerCategory: String): ProgressLogger {
-    val progressLoggerFactory = services.get(ProgressLoggerFactory::class.java)
-    return progressLoggerFactory.newOperation(loggerCategory).also { it.description = loggerCategory }
-}
 
 fun URL.download(file: File, progressLogger: ProgressLogger) {
     progressLogger.started()

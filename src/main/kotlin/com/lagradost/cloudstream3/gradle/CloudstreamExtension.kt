@@ -5,6 +5,7 @@ import org.gradle.api.plugins.ExtensionContainer
 import javax.inject.Inject
 
 abstract class CloudstreamExtension @Inject constructor(project: Project) {
+
     val userCache = project.gradle.gradleUserHomeDir.resolve("caches").resolve("cloudstream")
 
     val apiVersion = 1
@@ -18,15 +19,14 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
     var buildBranch: String = "builds"
 
     fun overrideUrlPrefix(url: String) {
-        if (apkinfo == null) {
-            apkinfo = ApkInfo(this, "pre-release")
-        }
+        if (apkinfo == null) apkinfo = ApkInfo(this, "pre-release")
         apkinfo!!.urlPrefix = url
     }
 
     fun setRepo(user: String, repo: String, url: String, rawLinkFormat: String) {
         repository = Repo(user, repo, url, rawLinkFormat)
     }
+
     fun setRepo(user: String, repo: String, type: String) {
         when {
             type == "github" -> setRepo(user, repo, "https://github.com/${user}/${repo}", "https://raw.githubusercontent.com/${user}/${repo}/%branch%/%filename%")
@@ -43,9 +43,9 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
             else -> throw IllegalArgumentException("Unknown type ${type}. Use github, gitlab, gitlab-<domain> or gitea-<domain> or set repository via setRepo(user, repo, url, rawLinkFormat)")
         }
     }
+
     fun setRepo(url: String) {
         var type: String? = null
-
         var split = when {
              url.startsWith("https://github.com") -> {
                 type = "github"
@@ -78,13 +78,6 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
         setRepo(split[0], split[1], type)
     }
 
-    internal var pluginClassName: String? = null
-    internal var fileSize: Long? = null
-    internal var fileHash: String? = null
-
-    internal var jarFileSize: Long? = null
-    internal var jarHash: String? = null
-
     var requiresResources = false
     var description: String? = null
     var authors = listOf<String>()
@@ -101,9 +94,8 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
 class ApkInfo(extension: CloudstreamExtension, release: String) {
     val cache = extension.userCache.resolve("cloudstream")
-
-    var urlPrefix = "https://github.com/recloudstream/cloudstream/releases/download/${release}"
     val jarFile = cache.resolve("cloudstream.jar")
+    var urlPrefix = "https://github.com/recloudstream/cloudstream/releases/download/${release}"
 }
 
 class Repo(val user: String, val repo: String, val url: String, val rawLinkFormat: String) {
@@ -116,8 +108,4 @@ class Repo(val user: String, val repo: String, val url: String, val rawLinkForma
 
 fun ExtensionContainer.getCloudstream(): CloudstreamExtension {
     return getByName("cloudstream") as CloudstreamExtension
-}
-
-fun ExtensionContainer.findCloudstream(): CloudstreamExtension? {
-    return findByName("cloudstream") as CloudstreamExtension?
 }
