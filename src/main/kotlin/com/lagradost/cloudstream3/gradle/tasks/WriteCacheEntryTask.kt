@@ -7,14 +7,18 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.security.MessageDigest
 
+@CacheableTask
 abstract class WriteCacheEntryTask : DefaultTask() {
 
     @get:Input abstract val pluginName: Property<String>
@@ -30,8 +34,14 @@ abstract class WriteCacheEntryTask : DefaultTask() {
     @get:Input abstract val apiVersion: Property<Int>
     @get:Input @get:Optional abstract val tvTypes: ListProperty<String>
 
-    @get:InputFile abstract val cs3File: RegularFileProperty
-    @get:InputFile @get:Optional abstract val jarFile: RegularFileProperty
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val cs3File: RegularFileProperty
+
+    @get:InputFile
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val jarFile: RegularFileProperty
 
     @get:OutputFile abstract val outputFile: RegularFileProperty
 

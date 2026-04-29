@@ -2,31 +2,39 @@ package com.lagradost.cloudstream3.gradle.tasks
 
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SkipWhenEmpty
 import java.io.File
 
+@CacheableTask
 abstract class CompileResourcesTask : Exec() {
 
     @get:InputDirectory
     @get:SkipWhenEmpty
     @get:IgnoreEmptyDirectories
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val input: DirectoryProperty
 
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
     abstract val manifestFile: RegularFileProperty
 
     @get:OutputFile
     abstract val outputFile: RegularFileProperty
 
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
     abstract val aaptExecutable: RegularFileProperty
 
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val androidJar: RegularFileProperty
 
     override fun exec() {
