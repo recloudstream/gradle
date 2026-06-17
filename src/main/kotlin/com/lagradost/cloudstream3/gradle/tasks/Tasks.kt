@@ -106,16 +106,17 @@ fun registerTasks(project: Project) {
         task.targetJarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
     }
 
-    project.tasks.register("ensureJarCompatibility", EnsureJarCompatibilityTask::class.java) { task ->
-        task.dependsOn(compilePluginJar)
-        task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
-        if (extension.isCrossPlatform) {
-            task.jarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
-            task.doLast {
-                task.checkOutput()
+    val ensureJarCompatibility =
+        project.tasks.register("ensureJarCompatibility", EnsureJarCompatibilityTask::class.java) { task ->
+            task.dependsOn(compilePluginJar)
+            task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
+            if (extension.isCrossPlatform) {
+                task.jarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
+                task.doLast {
+                    task.checkOutput()
+                }
             }
         }
-    }
 
     val manifestFile = intermediatesDir.map { it.file("manifest.json") }
 
@@ -202,6 +203,7 @@ fun registerTasks(project: Project) {
 
     project.rootProject.tasks.named("makePluginsJson", MakePluginsJsonTask::class.java).configure { task ->
         task.dependsOn(writeCacheEntry)
+        task.mustRunAfter(ensureJarCompatibility)
         task.pluginEntryFiles.from(pluginEntryFile)
     }
 
