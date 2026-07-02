@@ -3,8 +3,11 @@ package com.lagradost.cloudstream3.gradle.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import se.vidstige.jadb.AdbServerLauncher
@@ -16,6 +19,7 @@ import se.vidstige.jadb.Subprocess
 import java.io.File
 import java.nio.charset.StandardCharsets
 
+@CacheableTask
 abstract class DeployWithAdbTask : DefaultTask() {
 
     @get:Input
@@ -23,7 +27,9 @@ abstract class DeployWithAdbTask : DefaultTask() {
     var waitForDebugger: Boolean = false
 
     @get:Input abstract val adbPath: Property<String>
-    @get:InputFile abstract val pluginFile: RegularFileProperty
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val pluginFile: RegularFileProperty
 
     @TaskAction
     fun deployWithAdb() {

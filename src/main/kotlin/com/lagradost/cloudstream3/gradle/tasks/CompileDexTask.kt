@@ -11,11 +11,14 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SkipWhenEmpty
-import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.TaskAction
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
@@ -25,11 +28,13 @@ import java.nio.file.Path
 import java.util.Arrays
 import java.util.stream.Collectors
 
+@CacheableTask
 abstract class CompileDexTask : DefaultTask() {
 
     @InputFiles
     @SkipWhenEmpty
     @IgnoreEmptyDirectories
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     val input: ConfigurableFileCollection = project.objects.fileCollection()
 
     @get:OutputFile
@@ -42,6 +47,7 @@ abstract class CompileDexTask : DefaultTask() {
 	abstract val minSdk: Property<Int>
 
 	@get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
 	abstract val bootClasspath: ConfigurableFileCollection
 
     @TaskAction
