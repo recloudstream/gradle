@@ -43,12 +43,18 @@ abstract class WriteCacheEntryTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val jarFile: RegularFileProperty
 
+    @get:InputFile
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val jsFile: RegularFileProperty
+
     @get:OutputFile abstract val outputFile: RegularFileProperty
 
     @TaskAction
     fun write() {
         val cs3 = cs3File.asFile.get()
         val jar = jarFile.asFile.orNull?.takeIf { it.exists() }
+        val js = jsFile.asFile.orNull?.takeIf { it.exists() }
 
         val name = pluginName.get()
         val rawTemplate = repoRawLink.orNull
@@ -72,6 +78,9 @@ abstract class WriteCacheEntryTask : DefaultTask() {
             jarFileSize = jar?.length(),
             jarUrl = jar?.let { rawLink("${name}.jar") },
             jarHash = jar?.let { sha256(it) },
+            jsFileSize = js?.length(),
+            jsUrl = js?.let { rawLink("${name}.js") },
+            jsHash = js?.let { sha256(it) },
         )
 
         outputFile.asFile.get().writeText(

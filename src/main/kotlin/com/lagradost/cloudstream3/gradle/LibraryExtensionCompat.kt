@@ -3,10 +3,12 @@
 
 package com.lagradost.cloudstream3.gradle
 
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.BaseExtension
 import org.gradle.api.Project
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import java.io.File
 
 /**
@@ -18,13 +20,18 @@ import java.io.File
  */
 internal class LibraryExtensionCompat(private val project: Project) {
 
-    private val android = project.extensions.findByName("android")
-        ?: error("Android plugin not found")
+    private val kmpExtension = project.extensions.findByName("kotlin") as? KotlinMultiplatformExtension?
+    private val android = project.extensions.findByName("android") ?: kmpExtension?.targets?.findByName("android") ?: error("Android plugin not found")
+    private val androidComponents =
+        project.extensions.getByType(
+            com.android.build.api.variant.AndroidComponentsExtension::class.java
+        )
 
     val compileSdk: String
         get() = when (android) {
             is BaseExtension -> android.compileSdkVersion ?: error("compileSdkVersion not found")
             is LibraryExtension -> "android-${android.compileSdk}"
+            is KotlinMultiplatformAndroidLibraryTarget -> "android-${android.compileSdk}"
             else -> error("Android plugin found, but it's not a library module")
         }
 
@@ -32,6 +39,7 @@ internal class LibraryExtensionCompat(private val project: Project) {
         get() = when (android) {
             is BaseExtension -> android.defaultConfig.minSdk ?: 21
             is LibraryExtension -> android.defaultConfig.minSdk ?: 21
+            is KotlinMultiplatformAndroidLibraryTarget -> android.minSdk ?: 21
             else -> error("Android plugin found, but it's not a library module")
         }
 
@@ -39,6 +47,7 @@ internal class LibraryExtensionCompat(private val project: Project) {
         get() = when (android) {
             is BaseExtension -> android.buildToolsVersion
             is LibraryExtension -> android.buildToolsVersion
+            is KotlinMultiplatformAndroidLibraryTarget -> android.buildToolsVersion
             else -> error("Android plugin found, but it's not a library module")
         }
 
@@ -49,6 +58,7 @@ internal class LibraryExtensionCompat(private val project: Project) {
                 .findByType(LibraryAndroidComponentsExtension::class.java)
                 ?.sdkComponents
                 ?.adb?.get()?.asFile ?: error("LibraryAndroidComponentsExtension not found")
+            is KotlinMultiplatformAndroidLibraryTarget -> androidComponents.sdkComponents.adb.get().asFile
             else -> error("Unknown Android extension type")
         }
 
@@ -59,6 +69,8 @@ internal class LibraryExtensionCompat(private val project: Project) {
                 .findByType(LibraryAndroidComponentsExtension::class.java)
                 ?.sdkComponents
                 ?.bootClasspath ?: error("LibraryAndroidComponentsExtension not found")
+            is KotlinMultiplatformAndroidLibraryTarget ->  androidComponents.sdkComponents.bootClasspath
+
             else -> error("Unknown Android extension type")
         }
 
@@ -70,6 +82,8 @@ internal class LibraryExtensionCompat(private val project: Project) {
                 ?.sdkComponents
                 ?.sdkDirectory
                 ?.get()?.asFile ?: error("LibraryAndroidComponentsExtension not found")
+            is KotlinMultiplatformAndroidLibraryTarget -> androidComponents.sdkComponents.sdkDirectory.get().asFile
+
             else -> error("Unknown Android extension type")
         }
 
@@ -82,6 +96,17 @@ internal class LibraryExtensionCompat(private val project: Project) {
                     error(
                         "Resource directory not found at ${dir.path}. " +
                         "Resources are only supported in src/main/res. " +
+                        "If this extension has no resources, remove requiresResources = true."
+                    )
+                }
+                dir
+            }
+            is KotlinMultiplatformAndroidLibraryTarget ->  {
+                val dir = project.layout.projectDirectory.dir("src/androidMain/resources").asFile
+                if (!dir.exists()) {
+                    error(
+                        "Resource directory not found at ${dir.path}. " +
+                        "Resources are only supported in src/androidMain/resources. " +
                         "If this extension has no resources, remove requiresResources = true."
                     )
                 }

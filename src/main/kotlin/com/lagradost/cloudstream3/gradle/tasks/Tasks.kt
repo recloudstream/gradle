@@ -52,7 +52,8 @@ fun registerTasks(project: Project) {
         task.minSdk.set(android.minSdk)
         task.bootClasspath.from(android.bootClasspath)
 
-        val kotlinTask = project.tasks.findByName("compileDebugKotlin") as? KotlinCompile
+        val kotlinTask = (project.tasks.findByName("compileDebugKotlin")
+            ?: project.tasks.findByName("compileAndroidMain")) as? KotlinCompile
         if (kotlinTask != null) {
             task.dependsOn(kotlinTask)
             task.input.from(kotlinTask.destinationDirectory)
@@ -68,14 +69,18 @@ fun registerTasks(project: Project) {
             task.group = TASK_GROUP
 
             val processManifestTask =
-                project.tasks.named("processDebugManifest", ProcessLibraryManifest::class.java)
+                (project.tasks.findByName("processDebugManifest")
+                    ?: project.tasks.findByName("processAndroidMainManifest")) as? ProcessLibraryManifest
+                    ?: error("No manifest process task.")
+
             task.dependsOn(processManifestTask)
-
+            task.manifestFile.set(processManifestTask.manifestOutputFile)
             val android = LibraryExtensionCompat(project)
-            task.input.set(android.mainResSrcDir)
 
-            task.manifestFile.set(processManifestTask.flatMap { it.manifestOutputFile })
             task.outputFile.set(resApkFile)
+            if (extension.requiresResources) {
+                task.input.set(android.mainResSrcDir)
+            }
 
             task.aaptExecutable.set(project.layout.file(project.provider {
                 android.sdkDirectory
@@ -92,22 +97,47 @@ fun registerTasks(project: Project) {
             }))
         }
 
-    val compilePluginJar = project.tasks.register("compilePluginJar", CompilePluginJarTask::class.java) { task ->
-        task.group = TASK_GROUP
-        task.dependsOn(compileDex) // compileDex creates pluginClass
-        task.finalizedBy("ensureJarCompatibility") // Ensure compiled JAR is valid
+    val compilePluginJs =
+        project.tasks.register("compilePluginJs", CompilePluginJsTask::class.java) { task ->
+            task.group = TASK_GROUP
+            task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
+            task.targetJsFile.set(project.layout.buildDirectory.file("${project.name}.js"))
 
-        val jarTask = project.tasks.named("createFullJarDebug")
-        task.dependsOn(jarTask) // Ensure JAR is built before copying
+            val compileJsTaskName = "jsProductionExecutableCompileSync"
+            // No source if there is no JS compilation task
+            val compileJsTask = project.tasks.findByName(compileJsTaskName) ?: return@register
 
-        task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
-        task.pluginClassFile.set(pluginClassFile)
-        task.jarInputFile.fileProvider(jarTask.map { it.outputs.files.singleFile })
-        task.targetJarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
-    }
+            task.dependsOn(compileJsTask) // Ensure JS is compiled before copy
+
+            compileJsTask.outputs.files.asFileTree.find { file ->
+                file.name.endsWith(
+                    "${project.name}.js"
+                )
+            }?.let { foundFile ->
+                task.setSource(foundFile)
+            }
+        }
+
+
+    val compilePluginJar =
+        project.tasks.register("compilePluginJar", CompilePluginJarTask::class.java) { task ->
+            task.group = TASK_GROUP
+            task.finalizedBy("ensureJarCompatibility") // Ensure compiled JAR is valid
+
+            val jarTask = project.tasks.findByName("createFullJarDebug")
+                ?: project.tasks.findByName("jvmJar") ?: error("No JAR task available.")
+            task.dependsOn(jarTask) // Ensure JAR is built before copying
+
+            task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
+            task.jarInputFile.fileValue(jarTask.outputs.files.singleFile)
+            task.targetJarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
+        }
 
     val ensureJarCompatibility =
-        project.tasks.register("ensureJarCompatibility", EnsureJarCompatibilityTask::class.java) { task ->
+        project.tasks.register(
+            "ensureJarCompatibility",
+            EnsureJarCompatibilityTask::class.java
+        ) { task ->
             task.dependsOn(compilePluginJar)
             task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
             if (extension.isCrossPlatform) {
@@ -120,31 +150,34 @@ fun registerTasks(project: Project) {
 
     val manifestFile = intermediatesDir.map { it.file("manifest.json") }
 
-    val generateManifest = project.tasks.register("generateManifest", GenerateManifestTask::class.java) { task ->
-        task.group = TASK_GROUP
-        task.dependsOn(compileDex)
+    val generateManifest =
+        project.tasks.register("generateManifest", GenerateManifestTask::class.java) { task ->
+            task.group = TASK_GROUP
+            task.dependsOn(compileDex)
 
-        task.pluginClassFile.set(pluginClassFile)
-        task.outputFile.set(manifestFile)
+            task.pluginClassFile.set(pluginClassFile)
+            task.outputFile.set(manifestFile)
 
-        task.pluginName.set(project.name)
-        task.pluginVersion.set(
-            project.provider {
-                project.version.toString().toIntOrNull(10).also { v ->
-                    if (v == null) project.logger.warn(
-                        "'${project.version}' is not a valid version in ${project.name}. Use an integer."
-                    )
-                } ?: -1
-            }
-        )
-        task.requiresResources.set(extension.requiresResources)
-    }
+            task.pluginName.set(project.name)
+            task.pluginVersion.set(
+                project.provider {
+                    project.version.toString().toIntOrNull(10).also { v ->
+                        if (v == null) project.logger.warn(
+                            "'${project.version}' is not a valid version in ${project.name}. Use an integer."
+                        )
+                    } ?: -1
+                }
+            )
+            task.requiresResources.set(extension.requiresResources)
+        }
 
     val make = project.tasks.register("make", Zip::class.java) { task ->
         task.group = TASK_GROUP
         task.dependsOn(compileDex)
+
         if (extension.isCrossPlatform) {
             task.dependsOn(compilePluginJar)
+            task.dependsOn(compilePluginJs)
         }
 
         task.dependsOn(generateManifest)
@@ -172,40 +205,57 @@ fun registerTasks(project: Project) {
 
     val pluginEntryFile = project.layout.buildDirectory.file("plugin-entry.json")
 
-    val writeCacheEntry = project.tasks.register("writeCacheEntry", WriteCacheEntryTask::class.java) { task ->
-        task.group = TASK_GROUP
-        task.dependsOn(make)
-        if (extension.isCrossPlatform) task.dependsOn(compilePluginJar)
+    val writeCacheEntry =
+        project.tasks.register("writeCacheEntry", WriteCacheEntryTask::class.java) { task ->
+            task.group = TASK_GROUP
+            task.dependsOn(make)
+            if (extension.isCrossPlatform) {
+                task.dependsOn(compilePluginJar)
+                task.dependsOn(compilePluginJs)
+            }
 
-        task.pluginName.set(project.name)
-        task.pluginVersion.set(project.provider {
-            project.version.toString().toIntOrNull(10) ?: -1
-        })
-        task.repoUrl.set(project.provider { extension.repository?.url })
-        task.repoRawLink.set(project.provider { extension.repository?.getRawLink("{file}", extension.buildBranch) })
-        task.buildBranch.set(project.provider { extension.buildBranch })
-        task.status.set(project.provider { extension.status })
-        task.authors.set(project.provider { extension.authors })
-        task.pluginDescription.set(project.provider { extension.description })
-        task.language.set(project.provider { extension.language })
-        task.iconUrl.set(project.provider { extension.iconUrl })
-        task.apiVersion.set(project.provider { extension.apiVersion })
-        task.tvTypes.set(project.provider { extension.tvTypes })
+            task.pluginName.set(project.name)
+            task.pluginVersion.set(project.provider {
+                project.version.toString().toIntOrNull(10) ?: -1
+            })
+            task.repoUrl.set(project.provider { extension.repository?.url })
+            task.repoRawLink.set(project.provider {
+                extension.repository?.getRawLink(
+                    "{file}",
+                    extension.buildBranch
+                )
+            })
+            task.buildBranch.set(project.provider { extension.buildBranch })
+            task.status.set(project.provider { extension.status })
+            task.authors.set(project.provider { extension.authors })
+            task.pluginDescription.set(project.provider { extension.description })
+            task.language.set(project.provider { extension.language })
+            task.iconUrl.set(project.provider { extension.iconUrl })
+            task.apiVersion.set(project.provider { extension.apiVersion })
+            task.tvTypes.set(project.provider { extension.tvTypes })
 
-        task.cs3File.set(make.flatMap { zip ->
-            zip.outputs.files.let { project.layout.buildDirectory.file("${project.name}.cs3") }
-        })
-        if (extension.isCrossPlatform) {
-            task.jarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
+            task.cs3File.set(make.flatMap { zip ->
+                zip.outputs.files.let { project.layout.buildDirectory.file("${project.name}.cs3") }
+            })
+            if (extension.isCrossPlatform) {
+                task.jarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
+                val jsFile = project.layout.buildDirectory.file("${project.name}.js").get()
+                if (jsFile.asFile.exists()) {
+                    task.jsFile.set(jsFile)
+                }
+            }
+            task.outputFile.set(pluginEntryFile)
         }
-        task.outputFile.set(pluginEntryFile)
-    }
 
-    project.rootProject.tasks.named("makePluginsJson", MakePluginsJsonTask::class.java).configure { task ->
-        task.dependsOn(writeCacheEntry)
-        task.mustRunAfter(ensureJarCompatibility)
-        task.pluginEntryFiles.from(pluginEntryFile)
-    }
+    project.rootProject.tasks.named("makePluginsJson", MakePluginsJsonTask::class.java)
+        .configure { task ->
+            task.dependsOn(writeCacheEntry)
+            task.mustRunAfter(ensureJarCompatibility)
+            if (extension.isCrossPlatform) {
+                task.mustRunAfter(compilePluginJs)
+            }
+            task.pluginEntryFiles.from(pluginEntryFile)
+        }
 
     project.tasks.register("cleanCache", CleanCacheTask::class.java) { task ->
         task.group = TASK_GROUP

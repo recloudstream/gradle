@@ -13,13 +13,8 @@ import org.gradle.api.tasks.TaskAction
 
 @CacheableTask
 abstract class CompilePluginJarTask : DefaultTask() {
-
     @get:Input
     abstract val hasCrossPlatformSupport: Property<Boolean>
-
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val pluginClassFile: RegularFileProperty
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)

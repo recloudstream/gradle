@@ -2,6 +2,7 @@ package com.lagradost.cloudstream3.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import javax.inject.Inject
 
 abstract class CloudstreamExtension @Inject constructor(project: Project) {
@@ -25,6 +26,12 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     fun setRepo(user: String, repo: String, url: String, rawLinkFormat: String) {
         repository = Repo(user, repo, url, rawLinkFormat)
+    }
+
+    fun Project.multiplatform(config: KotlinMultiplatformExtension.() -> Unit) {
+        extensions.configure<KotlinMultiplatformExtension>("kotlin") { kmp ->
+            config.invoke(kmp)
+        }
     }
 
     fun setRepo(user: String, repo: String, type: String) {
