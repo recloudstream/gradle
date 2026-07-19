@@ -19,6 +19,8 @@ fun registerTasks(project: Project) {
             task.group = TASK_GROUP
             task.outputs.upToDateWhen { false }
             task.outputFile.set(task.project.layout.buildDirectory.file("plugins.json"))
+            task.nuvioOutputFile.set(task.project.layout.buildDirectory.file("nuvio.json"))
+            task.repositoryName.set(task.project.name)
         }
     }
 
@@ -229,6 +231,7 @@ fun registerTasks(project: Project) {
     }
 
     val pluginEntryFile = project.layout.buildDirectory.file("plugin-entry.json")
+    val nuvioPluginEntryFile = project.layout.buildDirectory.file("nuvio-plugin-entry.json")
 
     val writeCacheEntry =
         project.tasks.register("writeCacheEntry", WriteCacheEntryTask::class.java) { task ->
@@ -239,6 +242,7 @@ fun registerTasks(project: Project) {
                 task.dependsOn(compilePluginJs)
             }
 
+            task.nuvioEnabled.set(extension.isNuvioEnabled)
             task.pluginName.set(project.name)
             task.pluginVersion.set(project.provider {
                 project.version.toString().toIntOrNull(10) ?: -1
@@ -269,17 +273,17 @@ fun registerTasks(project: Project) {
                     task.jsFile.set(jsFile)
                 }
             }
+
             task.outputFile.set(pluginEntryFile)
+            task.nuvioOutputFile.set(nuvioPluginEntryFile)
         }
 
     project.rootProject.tasks.named("makePluginsJson", MakePluginsJsonTask::class.java)
         .configure { task ->
             task.dependsOn(writeCacheEntry)
             task.mustRunAfter(ensureJarCompatibility)
-            if (extension.isCrossPlatform) {
-                task.mustRunAfter(compilePluginJs)
-            }
             task.pluginEntryFiles.from(pluginEntryFile)
+            task.nuvioEntryFiles.from(nuvioPluginEntryFile)
         }
 
     project.tasks.register("cleanCache", CleanCacheTask::class.java) { task ->
