@@ -100,35 +100,55 @@ fun registerTasks(project: Project) {
     val compilePluginJs =
         project.tasks.register("compilePluginJs", CompilePluginJsTask::class.java) { task ->
             task.group = TASK_GROUP
-            task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
+            task.onlyIf("isCrossPlatform must be turned on to compile to JS.") {
+                extension.isCrossPlatform
+            }
+            // Prevent dependencies from being executed
+            if (!extension.isCrossPlatform) {
+                return@register
+            }
+
+            task.dependsOn(compileDex)
+            task.pluginClassFile.set(pluginClassFile)
+            task.nuvioEnabled.set(extension.isNuvioEnabled)
             task.targetJsFile.set(project.layout.buildDirectory.file("${project.name}.js"))
 
             val compileJsTaskName = "jsProductionExecutableCompileSync"
             // No source if there is no JS compilation task
-            val compileJsTask = project.tasks.findByName(compileJsTaskName) ?: return@register
+            val compileJsTask = project.tasks.findByName(compileJsTaskName)
 
-            task.dependsOn(compileJsTask) // Ensure JS is compiled before copy
-
-            compileJsTask.outputs.files.asFileTree.find { file ->
-                file.name.endsWith(
-                    "${project.name}.js"
-                )
-            }?.let { foundFile ->
-                task.setSource(foundFile)
+            val source = compileJsTask?.let { compileTask ->
+                task.dependsOn(compileTask) // Ensure JS is compiled before copy
+                compileTask.outputs.files.singleFile
             }
-        }
 
+            task.onlyIf("There must be a JS output from $compileJsTaskName.") {
+                source != null
+            }
+
+            task.pluginName.set(project.name)
+            task.sourceDir.set(source)
+        }
 
     val compilePluginJar =
         project.tasks.register("compilePluginJar", CompilePluginJarTask::class.java) { task ->
             task.group = TASK_GROUP
-            task.finalizedBy("ensureJarCompatibility") // Ensure compiled JAR is valid
+            task.onlyIf("isCrossPlatform must be turned on to compile to a JAR.") {
+                extension.isCrossPlatform
+            }
+            // Prevent dependencies from being executed
+            if (!extension.isCrossPlatform) {
+                return@register
+            }
 
             val jarTask = project.tasks.findByName("createFullJarDebug")
                 ?: project.tasks.findByName("jvmJar") ?: error("No JAR task available.")
-            task.dependsOn(jarTask) // Ensure JAR is built before copying
 
-            task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
+            if (task.enabled) {
+                task.dependsOn(jarTask) // Ensure JAR is built before copying
+                task.finalizedBy("ensureJarCompatibility") // Ensure compiled JAR is valid
+            }
+
             task.jarInputFile.fileValue(jarTask.outputs.files.singleFile)
             task.targetJarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
         }
@@ -138,13 +158,18 @@ fun registerTasks(project: Project) {
             "ensureJarCompatibility",
             EnsureJarCompatibilityTask::class.java
         ) { task ->
+            task.onlyIf("isCrossPlatform must be turned on to check the JAR file.") {
+                extension.isCrossPlatform
+            }
+            // Prevent dependencies from being executed
+            if (!extension.isCrossPlatform) {
+                return@register
+            }
+
             task.dependsOn(compilePluginJar)
-            task.hasCrossPlatformSupport.set(extension.isCrossPlatform)
-            if (extension.isCrossPlatform) {
-                task.jarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
-                task.doLast {
-                    task.checkOutput()
-                }
+            task.jarFile.set(project.layout.buildDirectory.file("${project.name}.jar"))
+            task.doLast {
+                task.checkOutput()
             }
         }
 
