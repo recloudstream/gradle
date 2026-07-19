@@ -112,7 +112,7 @@ fun registerTasks(project: Project) {
 
             task.dependsOn(compileDex)
             task.pluginClassFile.set(pluginClassFile)
-            task.nuvioEnabled.set(extension.isNuvioEnabled)
+            task.nuvioEnabled.set(extension.isNuvioEnabled && extension.isCrossPlatform)
             task.targetJsFile.set(project.layout.buildDirectory.file("${project.name}.js"))
 
             val compileJsTaskName = "jsProductionExecutableCompileSync"
@@ -242,7 +242,7 @@ fun registerTasks(project: Project) {
                 task.dependsOn(compilePluginJs)
             }
 
-            task.nuvioEnabled.set(extension.isNuvioEnabled)
+            task.nuvioEnabled.set(extension.isNuvioEnabled && extension.isCrossPlatform)
             task.pluginName.set(project.name)
             task.pluginVersion.set(project.provider {
                 project.version.toString().toIntOrNull(10) ?: -1
