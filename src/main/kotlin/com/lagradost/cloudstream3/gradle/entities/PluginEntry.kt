@@ -19,5 +19,9 @@ data class PluginEntry(
     // For cross-platform
     val jarFileSize: Long?,
     val jarUrl: String?,
-    val jarHash: String?
+    val jarHash: String?,
+
+    val jsFileSize: Long?,
+    val jsUrl: String?,
+    val jsHash: String?,
 )

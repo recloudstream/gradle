@@ -2,10 +2,23 @@ package com.lagradost.cloudstream3.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import javax.inject.Inject
 
-abstract class CloudstreamExtension @Inject constructor(project: Project) {
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "This API is experimental and may change in future releases."
+)
+@Retention(AnnotationRetention.BINARY)
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.CONSTRUCTOR
+)
+annotation class ExperimentalMultiplatform
 
+abstract class CloudstreamExtension @Inject constructor(project: Project) {
     val userCache = project.gradle.gradleUserHomeDir.resolve("caches").resolve("cloudstream")
 
     val apiVersion = 1
@@ -18,6 +31,9 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     var buildBranch: String = "builds"
 
+    var isNuvioEnabled: Boolean = false
+        internal set
+
     fun overrideUrlPrefix(url: String) {
         if (apkinfo == null) apkinfo = ApkInfo(this, "pre-release")
         apkinfo!!.urlPrefix = url
@@ -25,6 +41,21 @@ abstract class CloudstreamExtension @Inject constructor(project: Project) {
 
     fun setRepo(user: String, repo: String, url: String, rawLinkFormat: String) {
         repository = Repo(user, repo, url, rawLinkFormat)
+    }
+
+    fun Project.multiplatform(config: KotlinMultiplatformExtension.() -> Unit) {
+        extensions.configure<KotlinMultiplatformExtension>("kotlin") { kmp ->
+            config.invoke(kmp)
+        }
+    }
+
+    @ExperimentalMultiplatform
+    fun KotlinMultiplatformExtension.nuvio() {
+        isNuvioEnabled = true
+        js {
+            nodejs()
+            binaries.executable()
+        }
     }
 
     fun setRepo(user: String, repo: String, type: String) {

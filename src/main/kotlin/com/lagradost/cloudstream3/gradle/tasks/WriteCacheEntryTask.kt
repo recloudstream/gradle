@@ -1,5 +1,6 @@
 package com.lagradost.cloudstream3.gradle.tasks
 
+import com.lagradost.cloudstream3.gradle.entities.NuvioPluginEntry
 import com.lagradost.cloudstream3.gradle.entities.PluginEntry
 import groovy.json.JsonBuilder
 import groovy.json.JsonGenerator
@@ -43,12 +44,25 @@ abstract class WriteCacheEntryTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val jarFile: RegularFileProperty
 
-    @get:OutputFile abstract val outputFile: RegularFileProperty
+    @get:InputFile
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val jsFile: RegularFileProperty
+
+    @get:OutputFile
+    abstract val outputFile: RegularFileProperty
+
+    @get:Input
+    abstract val nuvioEnabled: Property<Boolean>
+
+    @get:OutputFile
+    abstract val nuvioOutputFile: RegularFileProperty
 
     @TaskAction
     fun write() {
         val cs3 = cs3File.asFile.get()
         val jar = jarFile.asFile.orNull?.takeIf { it.exists() }
+        val js = jsFile.asFile.orNull?.takeIf { it.exists() }
 
         val name = pluginName.get()
         val rawTemplate = repoRawLink.orNull
@@ -72,6 +86,9 @@ abstract class WriteCacheEntryTask : DefaultTask() {
             jarFileSize = jar?.length(),
             jarUrl = jar?.let { rawLink("${name}.jar") },
             jarHash = jar?.let { sha256(it) },
+            jsFileSize = js?.length(),
+            jsUrl = js?.let { rawLink("${name}.js") },
+            jsHash = js?.let { sha256(it) },
         )
 
         outputFile.asFile.get().writeText(
@@ -80,6 +97,34 @@ abstract class WriteCacheEntryTask : DefaultTask() {
                 JsonGenerator.Options().excludeNulls().build()
             ).toPrettyString()
         )
+
+        if (nuvioEnabled.get()) {
+            val nuvioEntry = NuvioPluginEntry(
+                name,
+                name,
+                pluginDescription.orNull,
+                "${pluginVersion.orNull ?: 0}.0.0",
+                authors.orNull?.joinToString(),
+                tvTypes.orNull?.map { it.lowercase() } ?: emptyList(),
+                "$name.js",
+                status.orNull != 0,
+                null,
+                iconUrl.orNull,
+                language.orNull?.let { listOf(it) },
+                null,
+                null,
+                false
+            )
+
+            nuvioOutputFile.asFile.get().writeText(
+                JsonBuilder(
+                    nuvioEntry,
+                    JsonGenerator.Options().excludeNulls().build()
+                ).toPrettyString()
+            )
+        } else {
+            nuvioOutputFile.asFile.get().delete()
+        }
     }
 
     private fun sha256(file: File): String {

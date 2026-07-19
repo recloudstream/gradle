@@ -13,14 +13,6 @@ import org.gradle.api.tasks.TaskAction
 
 @CacheableTask
 abstract class CompilePluginJarTask : DefaultTask() {
-
-    @get:Input
-    abstract val hasCrossPlatformSupport: Property<Boolean>
-
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val pluginClassFile: RegularFileProperty
-
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val jarInputFile: RegularFileProperty
@@ -30,8 +22,6 @@ abstract class CompilePluginJarTask : DefaultTask() {
 
     @TaskAction
     fun compileJar() {
-        if (!hasCrossPlatformSupport.get()) return
-
         val jarFile = jarInputFile.get().asFile
         val targetFile = targetJarFile.get().asFile
 
